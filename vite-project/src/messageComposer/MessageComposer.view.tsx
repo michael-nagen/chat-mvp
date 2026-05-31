@@ -1,23 +1,34 @@
-import type { MessageComposerProps } from "./MessageComposer.types";
-import { useMessageComposer } from "./MessageComposer.use";
+import type { MessageComposerViewProps } from "./MessageComposer.types";
+import {
+  ACTIVE_BUTTON_COLOR,
+  DISABLED_BUTTON_COLOR,
+  PLACEHOLDER_TEXT,
+  SEND_LABEL,
+  SENDING_LABEL,
+} from "./MessageComposer.constants";
 
 /** Renders the textarea and send button; Enter submits, Shift+Enter inserts a newline. */
-export function MessageComposerView(props: MessageComposerProps) {
-  const { sendable, handleSubmit, handleKeyDown } = useMessageComposer(props);
-
+export function MessageComposerView({
+  value,
+  onChange,
+  isSending,
+  sendable,
+  handleSubmit,
+  handleKeyDown,
+}: MessageComposerViewProps) {
   return (
     <form onSubmit={handleSubmit} style={styles.form}>
       <textarea
-        value={props.value}
-        onChange={(e) => props.onChange(e.target.value)}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder="Type a message..."
+        placeholder={PLACEHOLDER_TEXT}
         rows={1}
-        disabled={props.isSending}
+        disabled={isSending}
         style={styles.textarea}
       />
       <button type="submit" disabled={!sendable} style={styles.button(sendable)}>
-        {props.isSending ? "Sending..." : "Send"}
+        {isSending ? SENDING_LABEL : SEND_LABEL}
       </button>
     </form>
   );
@@ -48,7 +59,7 @@ const styles = {
     padding: "8px 14px",
     borderRadius: "4px",
     border: "none",
-    backgroundColor: sendable ? "#0084ff" : "#ccc",
+    backgroundColor: sendable ? ACTIVE_BUTTON_COLOR : DISABLED_BUTTON_COLOR,
     color: "white",
     cursor: sendable ? "pointer" : "default",
   }),

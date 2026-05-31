@@ -1,4 +1,5 @@
 import type { User } from '../shared/contract/contract';
+import { AUTH_STORAGE_KEY } from './Auth.constants';
 import type {
   AuthAction,
   AuthScreenViewProps,
@@ -30,7 +31,7 @@ export function authReducer(state: AuthState, action: AuthAction): AuthState {
   }
 }
 
-const STORAGE_KEY = 'chat-mvp-auth';
+const STORAGE_KEY = AUTH_STORAGE_KEY;
 
 type StoredAuth = { user: User; token: string };
 

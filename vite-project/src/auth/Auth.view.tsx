@@ -1,5 +1,6 @@
 import type { AuthScreenViewProps } from './Auth.types';
 import { useAuthScreenView } from './Auth.use';
+import { ACTIVE_BUTTON_COLOR, DISABLED_BUTTON_COLOR } from './Auth.constants';
 
 /** Renders the centred login card with name input, error message, and submit button. */
 export function AuthScreenView(props: AuthScreenViewProps) {
@@ -80,7 +81,7 @@ const styles = {
     padding: '10px 14px',
     borderRadius: '6px',
     border: 'none',
-    backgroundColor: submittable ? '#0084ff' : '#ccc',
+    backgroundColor: submittable ? ACTIVE_BUTTON_COLOR : DISABLED_BUTTON_COLOR,
     color: 'white',
     cursor: submittable ? 'pointer' : 'default',
   }),

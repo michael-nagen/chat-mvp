@@ -1,4 +1,6 @@
-import type { ToastViewProps } from "./Toast.types";
+import { TOAST_BG, TOAST_Z_INDEX } from "./Toast.constants";
+
+type ToastViewProps = { message: string; onDismiss: () => void };
 
 /** Renders a fixed-position error banner at the bottom of the screen with a dismiss button. */
 export function ToastView({ message, onDismiss }: ToastViewProps) {
@@ -13,14 +15,14 @@ export function ToastView({ message, onDismiss }: ToastViewProps) {
         display: "flex",
         alignItems: "center",
         gap: "12px",
-        background: "#d32f2f",
+        background: TOAST_BG,
         color: "white",
         padding: "12px 16px",
         borderRadius: "8px",
         boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
         fontFamily: "sans-serif",
         fontSize: "14px",
-        zIndex: 1000,
+        zIndex: TOAST_Z_INDEX,
       }}
     >
       <span>{message}</span>

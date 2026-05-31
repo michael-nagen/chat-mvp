@@ -1,10 +1,11 @@
 import { useEffect } from "react";
+import { AUTO_DISMISS_MS } from "./Toast.constants";
 
-// Calls onDismiss after `durationMs` while `active` is true.
+/** Calls onDismiss after AUTO_DISMISS_MS while `active` is true. */
 export function useAutoDismiss(
   active: boolean,
   onDismiss: () => void,
-  durationMs: number = 3000,
+  durationMs: number = AUTO_DISMISS_MS,
 ): void {
   useEffect(() => {
     if (!active) return;
