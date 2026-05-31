@@ -1,49 +1,20 @@
-import type { ConversationListViewProps, ConversationRowViewModel } from "./ConversationList.types";
-
-// ---------------------------------------------------------------------------
-// Sub-components
-// ---------------------------------------------------------------------------
+import { ConversationRow } from '../conversation';
+import type { ConversationListViewProps } from './ConversationList.types';
+import { SKELETON_COUNT } from './ConversationList.constants';
 
 /** Animated placeholder rows shown while conversations are loading. */
 function ConversationSkeletonList() {
   return (
     <div style={styles.column} aria-busy="true" aria-label="Loading conversations">
-      {Array.from({ length: 5 }).map((_, i) => (
+      {Array.from({ length: SKELETON_COUNT }).map((_, i) => (
         <div key={i} style={styles.skeletonRow}>
-          <div className="skeleton" style={{ height: "14px", width: "60%" }} />
-          <div className="skeleton" style={{ height: "12px", width: "85%" }} />
+          <div className="skeleton" style={{ height: '14px', width: '60%' }} />
+          <div className="skeleton" style={{ height: '12px', width: '85%' }} />
         </div>
       ))}
     </div>
   );
 }
-
-/** A single conversation row — highlighted when selected. */
-function ConversationRow({
-  conversation,
-  isSelected,
-  onSelect,
-}: ConversationRowViewModel & { onSelect: () => void }) {
-  return (
-    <div
-      onClick={onSelect}
-      style={{
-        ...styles.row,
-        background: isSelected ? "#e8f0fe" : "transparent",
-        borderLeft: isSelected ? "3px solid #0084ff" : "3px solid transparent",
-      }}
-    >
-      <div style={styles.rowTitle}>{conversation.title}</div>
-      {conversation.lastMessage && (
-        <div style={styles.rowPreview}>{conversation.lastMessage}</div>
-      )}
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Main view
-// ---------------------------------------------------------------------------
 
 /**
  * Displays the list of conversations for the current user.
@@ -63,7 +34,7 @@ export function ConversationListView({
   if (isLoading) return <ConversationSkeletonList />;
 
   if (error) {
-    return <div style={{ ...styles.center, color: "red" }}>{error}</div>;
+    return <div style={{ ...styles.center, color: 'red' }}>{error}</div>;
   }
 
   if (rows.length === 0) {
@@ -84,35 +55,19 @@ export function ConversationListView({
   );
 }
 
-// ---------------------------------------------------------------------------
-// Styles
-// ---------------------------------------------------------------------------
-
 const styles = {
   column: {
-    display: "flex",
-    flexDirection: "column" as const,
+    display: 'flex',
+    flexDirection: 'column' as const,
   },
   skeletonRow: {
-    padding: "12px 16px",
-    display: "flex",
-    flexDirection: "column" as const,
-    gap: "6px",
-  },
-  row: {
-    padding: "12px 16px",
-    cursor: "pointer",
-  },
-  rowTitle: {
-    fontWeight: 500,
-  },
-  rowPreview: {
-    fontSize: "13px",
-    color: "#888",
-    marginTop: "2px",
+    padding: '12px 16px',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '6px',
   },
   center: {
-    padding: "16px",
-    color: "#888",
+    padding: '16px',
+    color: '#888',
   },
 };

@@ -1,4 +1,5 @@
 import type { Conversation } from "../shared/contract/contract";
+import type { ConversationRowViewModel } from "../conversation";
 
 /** Props accepted by the ConversationList container, including selection and async state. */
 export type ConversationListProps = {
@@ -7,12 +8,6 @@ export type ConversationListProps = {
   isLoading: boolean;
   error: string | null;
   onSelectConversation: (conversationId: string) => void;
-};
-
-/** View model for a single conversation row with a pre-computed selection flag. */
-export type ConversationRowViewModel = {
-  conversation: Conversation;
-  isSelected: boolean;
 };
 
 /** Props consumed by the pure ConversationList view, using pre-computed row view models. */

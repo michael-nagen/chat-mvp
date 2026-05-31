@@ -1,52 +1,6 @@
-import type { Message } from "../shared/contract/contract";
-import type { MessageListViewProps } from "./MessageList.types";
-import { useAutoScroll } from "./MessageList.use";
-
-// ---------------------------------------------------------------------------
-// Sub-components
-// ---------------------------------------------------------------------------
-
-/** Animated placeholder rows shown while messages are loading. */
-function SkeletonList() {
-  const widths = ["55%", "40%", "65%", "35%", "50%"];
-  return (
-    <div style={styles.list} aria-busy="true" aria-label="Loading messages">
-      {widths.map((width, i) => (
-        <div
-          key={i}
-          className="skeleton"
-          style={{
-            ...styles.bubble,
-            alignSelf: i % 2 === 1 ? "flex-end" : "flex-start",
-            width,
-            height: "32px",
-          }}
-        />
-      ))}
-    </div>
-  );
-}
-
-/** A single chat bubble — blue on the right for the user, grey on the left for the assistant. */
-function MessageBubble({ message }: { message: Message }) {
-  const isUser = message.sender === "user";
-  return (
-    <div
-      style={{
-        ...styles.bubble,
-        alignSelf: isUser ? "flex-end" : "flex-start",
-        background: isUser ? "#0084ff" : "#f1f1f1",
-        color: isUser ? "white" : "black",
-      }}
-    >
-      {message.content}
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Main view
-// ---------------------------------------------------------------------------
+import type { MessageListViewProps } from './MessageList.types';
+import { useAutoScroll } from './MessageList.use';
+import { MessageBubble, MessageSkeletonList } from '../message';
 
 /**
  * Displays the message thread for the selected conversation.
@@ -70,10 +24,10 @@ export function MessageListView({
     return <div style={styles.center}>Select a conversation to start</div>;
   }
 
-  if (isLoading) return <SkeletonList />;
+  if (isLoading) return <MessageSkeletonList />;
 
   if (error) {
-    return <div style={{ ...styles.center, color: "red" }}>{error}</div>;
+    return <div style={{ ...styles.center, color: 'red' }}>{error}</div>;
   }
 
   if (messages.length === 0) {
@@ -90,26 +44,17 @@ export function MessageListView({
   );
 }
 
-// ---------------------------------------------------------------------------
-// Styles
-// ---------------------------------------------------------------------------
-
 const styles = {
   list: {
     flex: 1,
-    overflowY: "auto" as const,
-    padding: "16px",
-    display: "flex",
-    flexDirection: "column" as const,
-    gap: "8px",
-  },
-  bubble: {
-    maxWidth: "70%",
-    padding: "8px 12px",
-    borderRadius: "12px",
+    overflowY: 'auto' as const,
+    padding: '16px',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '8px',
   },
   center: {
-    padding: "16px",
-    color: "#888",
+    padding: '16px',
+    color: '#888',
   },
 };
