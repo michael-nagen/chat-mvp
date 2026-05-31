@@ -80,8 +80,10 @@ export function useAuthScreen(): AuthScreenViewProps {
   });
 }
 
+export type AuthScreenHandlers = { submittable: boolean; handleSubmit: (event: React.FormEvent<HTMLFormElement>) => void };
+
 /** Derives submittable state and a form submit handler from AuthScreenViewProps. */
-export function useAuthScreenView(props: AuthScreenViewProps) {
+export function useAuthScreenView(props: AuthScreenViewProps): AuthScreenHandlers {
   const submittable = canSubmit(props.name, props.isLoading);
 
   const handleSubmit = useCallback((event: React.FormEvent<HTMLFormElement>): void => {

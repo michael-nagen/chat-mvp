@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 import type { Message } from "../shared/contract/contract";
 import type { MessageListViewProps } from "./MessageList.types";
 import { useChatContext } from "../chatPage/ChatContext";
 import { getMessages } from "../shared/chatApi/apiClient";
 
 /** Scrolls the bottom anchor into view whenever the messages list changes. */
-export function useAutoScroll(messages: Message[]) {
+export function useAutoScroll(messages: Message[]): RefObject<HTMLDivElement | null> {
   const bottomRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ block: "end" });

@@ -2,7 +2,7 @@ import { ChatPage } from './chatPage';
 import { AuthScreen, useAuth } from './auth';
 
 /** Root component that gates the chat page behind authentication. */
-function App() {
+function App(): React.JSX.Element {
   const { isAuthenticated } = useAuth();
 
   if (!isAuthenticated) {

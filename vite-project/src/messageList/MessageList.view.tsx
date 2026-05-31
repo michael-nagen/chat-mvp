@@ -17,7 +17,7 @@ export function MessageListView({
   isLoading,
   error,
   hasSelectedConversation,
-}: MessageListViewProps) {
+}: MessageListViewProps): React.JSX.Element {
   const bottomRef = useAutoScroll(messages);
 
   if (!hasSelectedConversation) {

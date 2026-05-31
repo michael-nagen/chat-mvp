@@ -9,7 +9,7 @@ import {
 } from './Message.constants';
 
 /** A single chat bubble — blue on the right for the user, grey on the left for the assistant. */
-export function MessageBubble({ message }: { message: Message }) {
+export function MessageBubble({ message }: { message: Message }): React.JSX.Element {
   const isUser = message.sender === 'user';
   return (
     <div
@@ -26,7 +26,7 @@ export function MessageBubble({ message }: { message: Message }) {
 }
 
 /** Animated placeholder bubbles shown while the message thread is loading. */
-export function MessageSkeletonList() {
+export function MessageSkeletonList(): React.JSX.Element {
   return (
     <div style={styles.list} aria-busy="true" aria-label="Loading messages">
       {SKELETON_WIDTHS.map((width, i) => (

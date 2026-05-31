@@ -4,7 +4,7 @@ import { SELECTED_BG, SELECTED_BORDER_COLOR, SELECTED_BORDER_WIDTH } from './Con
 type Props = ConversationRowViewModel & { onSelect: () => void };
 
 /** A single conversation row — highlighted with a blue border when selected. */
-export function ConversationRow({ conversation, isSelected, onSelect }: Props) {
+export function ConversationRow({ conversation, isSelected, onSelect }: Props): React.JSX.Element {
   return (
     <div
       onClick={onSelect}

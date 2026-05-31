@@ -4,7 +4,7 @@ import { useAutoDismiss } from "./Toast.use";
 import { ToastView } from "./Toast.view";
 
 /** Self-contained toast — reads sendError from ChatContext and auto-dismisses after 3 s. */
-export function Toast() {
+export function Toast(): React.JSX.Element | null {
   const { sendError, setSendError } = useChatContext();
   const dismiss = useCallback((): void => setSendError(null), [setSendError]);
   useAutoDismiss(sendError !== null, dismiss);

@@ -3,7 +3,7 @@ import { TOAST_BG, TOAST_Z_INDEX } from "./Toast.constants";
 type ToastViewProps = { message: string; onDismiss: () => void };
 
 /** Renders a fixed-position error banner at the bottom of the screen with a dismiss button. */
-export function ToastView({ message, onDismiss }: ToastViewProps) {
+export function ToastView({ message, onDismiss }: ToastViewProps): React.JSX.Element {
   return (
     <div
       role="alert"

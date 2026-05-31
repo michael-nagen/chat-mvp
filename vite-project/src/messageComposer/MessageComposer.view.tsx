@@ -15,7 +15,7 @@ export function MessageComposerView({
   sendable,
   handleSubmit,
   handleKeyDown,
-}: MessageComposerViewProps) {
+}: MessageComposerViewProps): React.JSX.Element {
   return (
     <form onSubmit={handleSubmit} style={styles.form}>
       <textarea

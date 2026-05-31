@@ -3,7 +3,7 @@ import type { ConversationListViewProps } from './ConversationList.types';
 import { SKELETON_COUNT } from './ConversationList.constants';
 
 /** Animated placeholder rows shown while conversations are loading. */
-function ConversationSkeletonList() {
+function ConversationSkeletonList(): React.JSX.Element {
   return (
     <div style={styles.column} aria-busy="true" aria-label="Loading conversations">
       {Array.from({ length: SKELETON_COUNT }).map((_, i) => (
@@ -30,7 +30,7 @@ export function ConversationListView({
   isLoading,
   error,
   onSelectConversation,
-}: ConversationListViewProps) {
+}: ConversationListViewProps): React.JSX.Element {
   if (isLoading) return <ConversationSkeletonList />;
 
   if (error) {

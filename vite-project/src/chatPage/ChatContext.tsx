@@ -25,7 +25,7 @@ export function useChatContext(): ChatContextValue {
 }
 
 /** Provides shared chat state to the conversation list, thread, composer, and toast. */
-export function ChatProvider({ children }: { children: ReactNode }) {
+export function ChatProvider({ children }: { children: ReactNode }): React.JSX.Element {
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [sendError, setSendError] = useState<string | null>(null);

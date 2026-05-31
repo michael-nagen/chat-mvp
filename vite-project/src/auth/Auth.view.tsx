@@ -3,7 +3,7 @@ import { useAuthScreenView } from './Auth.use';
 import { ACTIVE_BUTTON_COLOR, DISABLED_BUTTON_COLOR } from './Auth.constants';
 
 /** Renders the centred login card with name input, error message, and submit button. */
-export function AuthScreenView(props: AuthScreenViewProps) {
+export function AuthScreenView(props: AuthScreenViewProps): React.JSX.Element {
   const { submittable, handleSubmit } = useAuthScreenView(props);
 
   return (
