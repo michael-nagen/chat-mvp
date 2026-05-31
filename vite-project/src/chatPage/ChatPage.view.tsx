@@ -1,44 +1,65 @@
-import type { ChatPageViewProps } from './ChatPage.types';
-import { ConversationList } from '../conversationList';
-import { MessageList } from '../messageList';
-import { MessageComposer } from '../messageComposer';
-import { Toast } from '../toast';
+import { useAuth } from "../auth";
+import { BORDER_COLOR, SIDEBAR_WIDTH } from "./ChatPage.constants";
+import { ConversationList } from "../conversationList";
+import { MessageList } from "../messageList";
+import { MessageComposer } from "../messageComposer";
+import { Toast } from "../toast";
 
-/** Renders the two-panel chat layout: conversation sidebar on the left, message thread and composer on the right. */
-export function ChatPageView({
-  conversationListProps,
-  messageListProps,
-  composerProps,
-  toastProps,
-  currentUserName,
-}: ChatPageViewProps) {
+/** Top-level chat layout — renders the four self-contained panes with no prop drilling. */
+export function ChatPageView() {
+  const { user } = useAuth();
+
   return (
-    <div style={{ display: "flex", height: "100vh", fontFamily: "sans-serif" }}>
+    <div style={styles.root}>
 
       {/* Left — conversation list */}
-      <div style={{ width: "260px", borderRight: "1px solid #eee", display: "flex", flexDirection: "column" }}>
-        <div
-          style={{
-            padding: "12px 16px",
-            borderBottom: "1px solid #eee",
-            fontWeight: 600,
-          }}
-        >
-          {currentUserName}
-        </div>
-        <div style={{ flex: 1, overflowY: "auto" }}>
-          <ConversationList {...conversationListProps} />
+      <div style={styles.sidebar}>
+        <div style={styles.sidebarHeader}>{user?.name}</div>
+        <div style={styles.sidebarScroll}>
+          <ConversationList />
         </div>
       </div>
 
       {/* Right — messages + composer */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-        <MessageList {...messageListProps} />
-        <MessageComposer {...composerProps} />
+      <div style={styles.main}>
+        <MessageList />
+        <MessageComposer />
       </div>
 
-      <Toast {...toastProps} />
+      <Toast />
 
     </div>
   );
 }
+
+// ---------------------------------------------------------------------------
+// Styles
+// ---------------------------------------------------------------------------
+
+const styles = {
+  root: {
+    display: "flex",
+    height: "100vh",
+    fontFamily: "sans-serif",
+  },
+  sidebar: {
+    width: SIDEBAR_WIDTH,
+    borderRight: `1px solid ${BORDER_COLOR}`,
+    display: "flex",
+    flexDirection: "column" as const,
+  },
+  sidebarHeader: {
+    padding: "12px 16px",
+    borderBottom: `1px solid ${BORDER_COLOR}`,
+    fontWeight: 600,
+  },
+  sidebarScroll: {
+    flex: 1,
+    overflowY: "auto" as const,
+  },
+  main: {
+    flex: 1,
+    display: "flex",
+    flexDirection: "column" as const,
+  },
+};

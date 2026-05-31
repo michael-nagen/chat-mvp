@@ -1,13 +1,13 @@
-import type { ToastProps } from "./Toast.types";
-import { ToastView } from "./Toast.view";
+import { useCallback } from "react";
+import { useChatContext } from "../chatPage/ChatContext";
 import { useAutoDismiss } from "./Toast.use";
+import { ToastView } from "./Toast.view";
 
-export type { ToastProps } from "./Toast.types";
-
-/** Renders a toast notification that auto-dismisses after a timeout; renders nothing when message is null. */
-export function Toast({ message, onDismiss }: ToastProps) {
-  useAutoDismiss(message !== null, onDismiss);
-
-  if (message === null) return null;
-  return <ToastView message={message} onDismiss={onDismiss} />;
+/** Self-contained toast — reads sendError from ChatContext and auto-dismisses after 3 s. */
+export function Toast() {
+  const { sendError, setSendError } = useChatContext();
+  const dismiss = useCallback((): void => setSendError(null), [setSendError]);
+  useAutoDismiss(sendError !== null, dismiss);
+  if (sendError === null) return null;
+  return <ToastView message={sendError} onDismiss={dismiss} />;
 }

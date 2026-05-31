@@ -1,10 +1,8 @@
-import type { ConversationListProps } from "./ConversationList.types";
 import { useConversationList } from "./ConversationList.use";
 import { ConversationListView } from "./ConversationList.view";
 
-export type { ConversationListProps } from "./ConversationList.types";
-
-export function ConversationList(props: ConversationListProps) {
-  const viewProps = useConversationList(props);
+/** Self-contained conversation list — fetches its own data via ChatContext. */
+export function ConversationList() {
+  const viewProps = useConversationList();
   return <ConversationListView {...viewProps} />;
 }

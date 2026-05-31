@@ -1,10 +1,8 @@
-import type { MessageListViewProps } from "./MessageList.types";
+import { useMessageList } from "./MessageList.use";
 import { MessageListView } from "./MessageList.view";
 
-/** Public props alias re-exported so callers import from the logic layer, not the view layer. */
-export type MessageListProps = MessageListViewProps;
-
-/** Container component that delegates rendering to MessageListView. */
-export function MessageList(props: MessageListProps) {
-  return <MessageListView {...props} />;
+/** Self-contained message thread — fetches its own data via ChatContext. */
+export function MessageList() {
+  const viewProps = useMessageList();
+  return <MessageListView {...viewProps} />;
 }

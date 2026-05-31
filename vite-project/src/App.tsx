@@ -3,13 +3,13 @@ import { AuthScreen, useAuth } from './auth';
 
 /** Root component that gates the chat page behind authentication. */
 function App() {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated } = useAuth();
 
-  if (!isAuthenticated || !user) {
+  if (!isAuthenticated) {
     return <AuthScreen />;
   }
 
-  return <ChatPage currentUser={user} />;
+  return <ChatPage />;
 }
 
 export default App;
