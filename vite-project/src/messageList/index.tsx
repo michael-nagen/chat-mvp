@@ -1,1 +1,1 @@
-export { MessageList } from "./MessageList.logic";
+export { MessageList } from './MessageList';

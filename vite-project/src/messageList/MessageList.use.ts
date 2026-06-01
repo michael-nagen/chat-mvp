@@ -1,51 +1,76 @@
-import { useEffect, useRef, useState, type RefObject } from "react";
-import type { Message } from "../shared/contract/contract";
+import { useEffect, useReducer } from "react";
 import type { MessageListViewProps } from "./MessageList.types";
-import { useChatContext } from "../chatPage/ChatContext";
+import { useChatSelection } from "../chatPage/ChatSelection.context";
 import { getMessages } from "../shared/chatApi/apiClient";
+import { useMessageThread } from "./MessageThread.context";
 
-/** Scrolls the bottom anchor into view whenever the messages list changes. */
-export function useAutoScroll(messages: Message[]): RefObject<HTMLDivElement | null> {
-  const bottomRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ block: "end" });
-  }, [messages]);
-  return bottomRef;
+type MessageListState = {
+  isLoading: boolean;
+  error: string | null;
+};
+
+type MessageListAction =
+  | { type: "LOAD_START" }
+  | { type: "LOAD_SUCCESS" }
+  | { type: "LOAD_ERROR"; error: string }
+  | { type: "NO_SELECTION" };
+
+const initialMessageListState: MessageListState = {
+  isLoading: false,
+  error: null,
+};
+
+function messageListReducer(
+  state: MessageListState,
+  action: MessageListAction,
+): MessageListState {
+  switch (action.type) {
+    case "LOAD_START":
+      return { isLoading: true, error: null };
+    case "LOAD_SUCCESS":
+      return { isLoading: false, error: null };
+    case "LOAD_ERROR":
+      return { isLoading: false, error: action.error };
+    case "NO_SELECTION":
+      return initialMessageListState;
+    default:
+      return state;
+  }
 }
 
 /** Fetches messages for the selected conversation and exposes loading/error state. */
 export function useMessageList(): MessageListViewProps {
-  const { selectedConversationId, messages, setMessages } = useChatContext();
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { selectedConversationId } = useChatSelection();
+  const { messages, setMessages } = useMessageThread();
+  const [state, dispatch] = useReducer(messageListReducer, initialMessageListState);
 
   useEffect(() => {
     if (!selectedConversationId) {
-      setIsLoading(false);
-      setError(null);
+      dispatch({ type: "NO_SELECTION" });
       return;
     }
     let cancelled = false;
-    setIsLoading(true);
-    setError(null);
+    dispatch({ type: "LOAD_START" });
     getMessages(selectedConversationId)
       .then((res) => {
         if (cancelled) return;
         setMessages(res.messages);
-        setIsLoading(false);
+        dispatch({ type: "LOAD_SUCCESS" });
       })
       .catch((err) => {
         if (cancelled) return;
-        setError(err instanceof Error ? err.message : "Failed to load messages");
-        setIsLoading(false);
+        dispatch({
+          type: "LOAD_ERROR",
+          error: err instanceof Error ? err.message : "Failed to load messages",
+        });
       });
     return () => { cancelled = true; };
   }, [selectedConversationId, setMessages]);
 
   return {
     messages,
-    isLoading,
-    error,
+    isLoading: state.isLoading,
+    error: state.error,
     hasSelectedConversation: selectedConversationId !== null,
   };
 }

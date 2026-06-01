@@ -1,5 +1,6 @@
 import type { MessageListViewProps } from './MessageList.types';
-import { useAutoScroll } from './MessageList.use';
+import { useAutoScroll } from './MessageListAutoScroll.use';
+import { messageListStyles } from './MessageList.styles';
 import { MessageBubble, MessageSkeletonList } from '../message';
 
 /**
@@ -19,42 +20,26 @@ export function MessageListView({
   hasSelectedConversation,
 }: MessageListViewProps): React.JSX.Element {
   const bottomRef = useAutoScroll(messages);
+  let content: React.JSX.Element;
 
   if (!hasSelectedConversation) {
-    return <div style={styles.center}>Select a conversation to start</div>;
+    content = <div style={messageListStyles.center}>Select a conversation to start</div>;
+  } else if (isLoading) {
+    content = <MessageSkeletonList />;
+  } else if (error) {
+    content = <div style={messageListStyles.error}>{error}</div>;
+  } else if (messages.length === 0) {
+    content = <div style={messageListStyles.center}>No messages yet</div>;
+  } else {
+    content = (
+      <div style={messageListStyles.list}>
+        {messages.map((m) => (
+          <MessageBubble key={m.id} message={m} />
+        ))}
+        <div ref={bottomRef} />
+      </div>
+    );
   }
 
-  if (isLoading) return <MessageSkeletonList />;
-
-  if (error) {
-    return <div style={{ ...styles.center, color: 'red' }}>{error}</div>;
-  }
-
-  if (messages.length === 0) {
-    return <div style={styles.center}>No messages yet</div>;
-  }
-
-  return (
-    <div style={styles.list}>
-      {messages.map((m) => (
-        <MessageBubble key={m.id} message={m} />
-      ))}
-      <div ref={bottomRef} />
-    </div>
-  );
+  return content;
 }
-
-const styles = {
-  list: {
-    flex: 1,
-    overflowY: 'auto' as const,
-    padding: '16px',
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '8px',
-  },
-  center: {
-    padding: '16px',
-    color: '#888',
-  },
-};

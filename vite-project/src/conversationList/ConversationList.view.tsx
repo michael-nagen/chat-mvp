@@ -1,20 +1,7 @@
 import { ConversationRow } from '../conversation';
 import type { ConversationListViewProps } from './ConversationList.types';
-import { SKELETON_COUNT } from './ConversationList.constants';
-
-/** Animated placeholder rows shown while conversations are loading. */
-function ConversationSkeletonList(): React.JSX.Element {
-  return (
-    <div style={styles.column} aria-busy="true" aria-label="Loading conversations">
-      {Array.from({ length: SKELETON_COUNT }).map((_, i) => (
-        <div key={i} style={styles.skeletonRow}>
-          <div className="skeleton" style={{ height: '14px', width: '60%' }} />
-          <div className="skeleton" style={{ height: '12px', width: '85%' }} />
-        </div>
-      ))}
-    </div>
-  );
-}
+import { ConversationSkeletonList } from './children/ConversationSkeletonList';
+import { conversationListStyles } from './ConversationList.styles';
 
 /**
  * Displays the list of conversations for the current user.
@@ -26,48 +13,30 @@ function ConversationSkeletonList(): React.JSX.Element {
  *  4. Conversations → scrollable list, selected row highlighted
  */
 export function ConversationListView({
-  rows,
+  conversations,
   isLoading,
   error,
-  onSelectConversation,
 }: ConversationListViewProps): React.JSX.Element {
-  if (isLoading) return <ConversationSkeletonList />;
+  let content: React.JSX.Element;
 
-  if (error) {
-    return <div style={{ ...styles.center, color: 'red' }}>{error}</div>;
+  if (isLoading) {
+    content = <ConversationSkeletonList />;
+  } else if (error) {
+    content = <div style={conversationListStyles.error}>{error}</div>;
+  } else if (conversations.length === 0) {
+    content = <div style={conversationListStyles.center}>No conversations yet</div>;
+  } else {
+    content = (
+      <div style={conversationListStyles.column}>
+        {conversations.map((conversation) => (
+          <ConversationRow
+            key={conversation.id}
+            conversation={conversation}
+          />
+        ))}
+      </div>
+    );
   }
 
-  if (rows.length === 0) {
-    return <div style={styles.center}>No conversations yet</div>;
-  }
-
-  return (
-    <div style={styles.column}>
-      {rows.map(({ conversation, isSelected }) => (
-        <ConversationRow
-          key={conversation.id}
-          conversation={conversation}
-          isSelected={isSelected}
-          onSelect={() => onSelectConversation(conversation.id)}
-        />
-      ))}
-    </div>
-  );
+  return content;
 }
-
-const styles = {
-  column: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-  },
-  skeletonRow: {
-    padding: '12px 16px',
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '6px',
-  },
-  center: {
-    padding: '16px',
-    color: '#888',
-  },
-};

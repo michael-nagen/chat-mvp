@@ -1,4 +1,4 @@
-import type { User } from '../shared/contract/contract';
+import type { User } from '../entities/User.types';
 
 /** Represents the current phase of the authentication lifecycle. */
 export type AuthStatus = 'idle' | 'loading' | 'authenticated' | 'error';

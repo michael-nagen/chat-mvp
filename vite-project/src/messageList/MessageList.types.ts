@@ -1,4 +1,4 @@
-import type { Message } from "../shared/contract/contract";
+import type { Message } from "../entities/Message.types";
 
 /** Props for the MessageList view, including a flag to distinguish the empty-selection state. */
 export type MessageListViewProps = {

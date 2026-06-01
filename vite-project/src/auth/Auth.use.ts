@@ -1,26 +1,10 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useState } from 'react';
+import { useEffect, useReducer, useState } from 'react';
 import { login as loginApi } from '../shared/chatApi/apiClient';
 import type { AuthContextValue, AuthScreenViewProps } from './Auth.types';
-import {
-  authReducer,
-  buildAuthScreenViewProps,
-  canSubmit,
-  initialAuthState,
-  readStoredAuth,
-  writeStoredAuth,
-} from './Auth.logic';
-
-/** React context that holds the current auth state and actions. */
-export const AuthContext = createContext<AuthContextValue | null>(null);
-
-/** Returns the auth context value; throws if called outside an AuthProvider. */
-export function useAuth(): AuthContextValue {
-  const value = useContext(AuthContext);
-  if (!value) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return value;
-}
+import { useAuth } from './Auth.context';
+import { authReducer, initialAuthState } from './Auth.reducer';
+import { readStoredAuth, writeStoredAuth } from './Auth.storage';
+import { canSubmit } from './Auth.utils';
 
 /** Drives the auth provider: wires useReducer, localStorage restore, and the login callback. */
 export function useAuthController(): AuthContextValue {
@@ -33,7 +17,7 @@ export function useAuthController(): AuthContextValue {
     }
   }, []);
 
-  const login = useCallback(async (name: string): Promise<void> => {
+  async function login(name: string): Promise<void> {
     dispatch({ type: 'LOGIN_START' });
     try {
       const res = await loginApi(name);
@@ -45,19 +29,16 @@ export function useAuthController(): AuthContextValue {
         error: err instanceof Error ? err.message : 'Failed to log in',
       });
     }
-  }, []);
+  }
 
-  return useMemo(
-    () => ({
-      status: state.status,
-      user: state.user,
-      token: state.token,
-      error: state.error,
-      isAuthenticated: state.status === 'authenticated' && state.user !== null,
-      login,
-    }),
-    [state, login],
-  );
+  return {
+    status: state.status,
+    user: state.user,
+    token: state.token,
+    error: state.error,
+    isAuthenticated: state.status === 'authenticated' && state.user !== null,
+    login,
+  };
 }
 
 /** Manages local name field state and produces view props for the login screen. */
@@ -65,19 +46,19 @@ export function useAuthScreen(): AuthScreenViewProps {
   const { status, error, login } = useAuth();
   const [name, setName] = useState('');
 
-  const onSubmit = useCallback((): void => {
+  function onSubmit(): void {
     const trimmed = name.trim();
     if (!trimmed) return;
     void login(trimmed);
-  }, [name, login]);
+  }
 
-  return buildAuthScreenViewProps({
+  return {
     name,
     onNameChange: setName,
     onSubmit,
-    status,
+    isLoading: status === 'loading',
     error,
-  });
+  };
 }
 
 export type AuthScreenHandlers = { submittable: boolean; handleSubmit: (event: React.FormEvent<HTMLFormElement>) => void };
@@ -86,11 +67,11 @@ export type AuthScreenHandlers = { submittable: boolean; handleSubmit: (event: R
 export function useAuthScreenView(props: AuthScreenViewProps): AuthScreenHandlers {
   const submittable = canSubmit(props.name, props.isLoading);
 
-  const handleSubmit = useCallback((event: React.FormEvent<HTMLFormElement>): void => {
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>): void {
     event.preventDefault();
     if (!submittable) return;
     props.onSubmit();
-  }, [submittable, props]);
+  }
 
   return { submittable, handleSubmit };
 }

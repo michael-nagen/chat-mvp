@@ -1,5 +1,3 @@
-/** Background colour of the error toast. */
-export const TOAST_BG = '#d32f2f';
 /** How long (ms) the toast stays visible before auto-dismissing. */
 export const AUTO_DISMISS_MS = 3000;
 /** z-index ensures the toast floats above all other content. */

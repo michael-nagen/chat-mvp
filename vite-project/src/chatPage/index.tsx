@@ -1,11 +1,17 @@
-import { ChatProvider } from "./ChatContext";
+import { ChatSelectionProvider } from "./ChatSelectionProvider";
 import { ChatPageView } from "./ChatPage.view";
+import { ToastProvider } from "../toast";
+import { MessageThreadProvider } from "../messageList/MessageThreadProvider";
 
-/** Provides shared chat state and renders the two-panel layout. */
+/** Composes chat feature providers and renders the two-panel layout. */
 export function ChatPage(): React.JSX.Element {
   return (
-    <ChatProvider>
-      <ChatPageView />
-    </ChatProvider>
+    <ChatSelectionProvider>
+      <ToastProvider>
+        <MessageThreadProvider>
+          <ChatPageView />
+        </MessageThreadProvider>
+      </ToastProvider>
+    </ChatSelectionProvider>
   );
 }

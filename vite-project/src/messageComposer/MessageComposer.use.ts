@@ -1,8 +1,10 @@
-import { useCallback, useEffect, useState } from "react";
-import type { Message } from "../shared/contract/contract";
-import { useChatContext } from "../chatPage/ChatContext";
+import { useState } from "react";
+import type { Message } from "../entities/Message.types";
+import { useChatSelection } from "../chatPage/ChatSelection.context";
+import { useMessageThread } from "../messageList/MessageThread.context";
 import { sendMessage } from "../shared/chatApi/apiClient";
-import { canSend } from "./MessageComposer.logic";
+import { useToast } from "../toast";
+import { canSend } from "./MessageComposer.utils";
 
 export type MessageComposerHandlers = {
   value: string;
@@ -15,19 +17,22 @@ export type MessageComposerHandlers = {
 
 /**
  * Manages draft text, optimistic send, rollback on failure,
- * and exposes form handlers — all wired to ChatContext.
+ * and exposes form handlers for the selected conversation.
  */
 export function useMessageComposer(): MessageComposerHandlers {
-  const { selectedConversationId, setMessages, setSendError } = useChatContext();
-  const [value, setValue] = useState("");
+  const { selectedConversationId } = useChatSelection();
+  const { setMessages } = useMessageThread();
+  const { showToast } = useToast();
+  const [draft, setDraft] = useState({ conversationId: selectedConversationId, value: "" });
   const [isSending, setIsSending] = useState(false);
 
-  // clear draft when the user switches conversations
-  useEffect(() => {
-    setValue("");
-  }, [selectedConversationId]);
+  const value = draft.conversationId === selectedConversationId ? draft.value : "";
 
-  const onSend = useCallback(async (): Promise<void> => {
+  function setValue(nextValue: string): void {
+    setDraft({ conversationId: selectedConversationId, value: nextValue });
+  }
+
+  async function onSend(): Promise<void> {
     if (!selectedConversationId || isSending) return;
     const trimmed = value.trim();
     if (!trimmed) return;
@@ -50,26 +55,26 @@ export function useMessageComposer(): MessageComposerHandlers {
       setMessages((prev) => prev.map((m) => (m.id === tempId ? res.message : m)));
     } catch (err) {
       setMessages((prev) => prev.filter((m) => m.id !== tempId));
-      setValue(trimmed);
-      setSendError(err instanceof Error ? err.message : "Failed to send message");
+      setDraft({ conversationId: selectedConversationId, value: trimmed });
+      showToast(err instanceof Error ? err.message : "Failed to send message");
     } finally {
       setIsSending(false);
     }
-  }, [selectedConversationId, isSending, value, setMessages, setSendError]);
+  }
 
   const sendable = canSend(value, isSending);
 
-  const handleSubmit = useCallback((event: React.FormEvent<HTMLFormElement>): void => {
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>): void {
     event.preventDefault();
     if (sendable) void onSend();
-  }, [sendable, onSend]);
+  }
 
-  const handleKeyDown = useCallback((event: React.KeyboardEvent<HTMLTextAreaElement>): void => {
+  function handleKeyDown(event: React.KeyboardEvent<HTMLTextAreaElement>): void {
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
       if (sendable) void onSend();
     }
-  }, [sendable, onSend]);
+  }
 
   return { value, onChange: setValue, isSending, sendable, handleSubmit, handleKeyDown };
 }

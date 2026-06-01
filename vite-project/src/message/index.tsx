@@ -1,1 +1,2 @@
-export { MessageBubble, MessageSkeletonList } from './Message.view';
+export { MessageBubble } from './Message.view';
+export { MessageSkeletonList } from './MessageSkeletonList';
