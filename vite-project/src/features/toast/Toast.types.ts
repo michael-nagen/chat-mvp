@@ -9,3 +9,8 @@ export type ToastViewProps = {
   message: string;
   onDismiss: () => void;
 };
+
+/** Props for the toast dismiss (×) button. */
+export type ToastDismissButtonProps = {
+  onDismiss: () => void;
+};
