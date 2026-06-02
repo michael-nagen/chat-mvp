@@ -2,7 +2,7 @@ import { useEffect, useReducer } from 'react';
 import type { Conversation } from '../entities/Conversation.types';
 import type { ConversationListViewProps } from './ConversationList.types';
 import { useAuth } from '../auth';
-import { getConversations } from '../shared/chatApi/apiClient';
+import { getUserConversations } from './ConversationList.api';
 
 type ConversationListState = {
   conversations: Conversation[];
@@ -47,7 +47,7 @@ export function useConversationList(): ConversationListViewProps {
     if (!userId) return;
     let cancelled = false;
     dispatch({ type: 'LOAD_START' });
-    getConversations(userId)
+    getUserConversations(userId)
       .then((res) => {
         if (cancelled) return;
         dispatch({ type: 'LOAD_SUCCESS', conversations: res.conversations });

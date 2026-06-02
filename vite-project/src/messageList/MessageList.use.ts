@@ -1,7 +1,7 @@
 import { useEffect, useReducer } from "react";
 import type { MessageListViewProps } from "./MessageList.types";
 import { useChatSelection } from "../chatPage/ChatSelection.context";
-import { getMessages } from "../shared/chatApi/apiClient";
+import { getConversationMessages } from "./MessageList.api";
 import { useMessageThread } from "./MessageThread.context";
 
 type MessageListState = {
@@ -51,7 +51,7 @@ export function useMessageList(): MessageListViewProps {
     }
     let cancelled = false;
     dispatch({ type: "LOAD_START" });
-    getMessages(selectedConversationId)
+    getConversationMessages(selectedConversationId)
       .then((res) => {
         if (cancelled) return;
         setMessages(res.messages);

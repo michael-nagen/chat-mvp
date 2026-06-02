@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { Message } from "../entities/Message.types";
 import { useChatSelection } from "../chatPage/ChatSelection.context";
 import { useMessageThread } from "../messageList/MessageThread.context";
-import { sendMessage } from "../shared/chatApi/apiClient";
+import { sendUserMessage } from "./MessageComposer.api";
 import { useToast } from "../toast";
 import { canSend } from "./MessageComposer.utils";
 
@@ -51,7 +51,7 @@ export function useMessageComposer(): MessageComposerHandlers {
     setIsSending(true);
 
     try {
-      const res = await sendMessage(selectedConversationId, trimmed);
+      const res = await sendUserMessage(selectedConversationId, trimmed);
       setMessages((prev) => prev.map((m) => (m.id === tempId ? res.message : m)));
     } catch (err) {
       setMessages((prev) => prev.filter((m) => m.id !== tempId));

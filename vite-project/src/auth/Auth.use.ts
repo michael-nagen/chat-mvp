@@ -1,5 +1,5 @@
 import { useEffect, useReducer, useState } from 'react';
-import { login as loginApi } from '../shared/chatApi/apiClient';
+import { loginByName } from './Auth.api';
 import type { AuthContextValue, AuthScreenViewProps } from './Auth.types';
 import { useAuth } from './Auth.context';
 import { authReducer, initialAuthState } from './Auth.reducer';
@@ -20,7 +20,7 @@ export function useAuthController(): AuthContextValue {
   async function login(name: string): Promise<void> {
     dispatch({ type: 'LOGIN_START' });
     try {
-      const res = await loginApi(name);
+      const res = await loginByName(name);
       writeStoredAuth({ user: res.user, token: res.token });
       dispatch({ type: 'LOGIN_SUCCESS', user: res.user, token: res.token });
     } catch (err) {
