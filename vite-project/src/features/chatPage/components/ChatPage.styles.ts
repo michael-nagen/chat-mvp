@@ -1,4 +1,4 @@
-import { colors } from '../../shared/styles/colors';
+import { colors } from '../../../shared/styles/colors';
 import { SIDEBAR_WIDTH } from './ChatPage.constants';
 
 export const chatPageStyles = {
