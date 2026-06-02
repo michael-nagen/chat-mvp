@@ -1,7 +1,7 @@
-import { colors } from '../../../shared/styles/colors';
-import { SELECTED_BORDER_WIDTH } from './Conversation.constants';
+import { colors } from '../../../../shared/styles/colors';
+import { SELECTED_BORDER_WIDTH } from './ConversationRow.constants';
 
-export const conversationStyles = {
+export const conversationRowStyles = {
   row: (isSelected: boolean): React.CSSProperties => ({
     padding: '12px 16px',
     cursor: 'pointer',

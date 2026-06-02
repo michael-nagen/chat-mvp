@@ -1,17 +1,6 @@
-import type { Conversation } from '../../../shared/entities/Conversation.types';
 import { ConversationRowProvider } from './ConversationRowProvider';
-import { useConversationRow } from './ConversationRow.use';
-import { ConversationRowView } from './Conversation.view';
-
-type ConversationRowProps = {
-  conversation: Conversation;
-};
-
-function ConversationRowContainer(): React.JSX.Element {
-  const viewProps = useConversationRow();
-
-  return <ConversationRowView {...viewProps} />;
-}
+import { ConversationRowContainer } from './ConversationRowContainer';
+import type { ConversationRowProps } from './ConversationRow.types';
 
 export function ConversationRow({ conversation }: ConversationRowProps): React.JSX.Element {
   return (
