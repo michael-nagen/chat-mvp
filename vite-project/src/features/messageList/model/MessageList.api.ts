@@ -1,5 +1,5 @@
-import type { Message } from '../../shared/entities/Message.types';
-import { requestMessages } from '../../shared/api/apiClient';
+import type { Message } from '../../../shared/entities/Message.types';
+import { requestMessages } from '../../../shared/api/apiClient';
 
 export type GetMessagesResponse = {
   messages: Message[];

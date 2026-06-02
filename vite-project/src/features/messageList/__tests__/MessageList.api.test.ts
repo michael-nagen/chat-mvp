@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getConversationMessages } from './MessageList.api';
+import { getConversationMessages } from '../model/MessageList.api';
 
 describe('getConversationMessages cursor pagination', () => {
   it('returns the newest page and a cursor, then the older page', async () => {
