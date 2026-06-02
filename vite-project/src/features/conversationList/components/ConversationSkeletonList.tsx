@@ -1,5 +1,5 @@
-import { SKELETON_COUNT } from '../ConversationList.constants';
-import { conversationListStyles } from '../ConversationList.styles';
+import { SKELETON_COUNT } from './ConversationList.constants';
+import { conversationListStyles } from './ConversationList.styles';
 
 /** Animated placeholder rows shown while conversations are loading. */
 export function ConversationSkeletonList(): React.JSX.Element {

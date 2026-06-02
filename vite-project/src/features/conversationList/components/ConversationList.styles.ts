@@ -1,4 +1,4 @@
-import { colors } from '../../shared/styles/colors';
+import { colors } from '../../../shared/styles/colors';
 
 export const conversationListStyles = {
   column: {
