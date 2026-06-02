@@ -52,35 +52,73 @@ flowchart TD
 
 ---
 
-## Folder convention
+## Feature anatomy
 
-| File             | Role                                                             |
-| ---------------- | ---------------------------------------------------------------- |
-| `*.types.ts`     | TypeScript types and prop shapes                                 |
-| `*.constants.ts` | Magic values — sizes, labels, timeouts                           |
-| `*.context.ts`   | `createContext` + accessor hook                                  |
-| `*.reducer.ts`   | Pure reducer + initial state                                     |
-| `*.storage.ts`   | Read / write to localStorage                                     |
-| `*.utils.ts`     | Pure utility functions                                           |
-| `*.use.ts`       | React hook — state, effects, handlers                            |
-| `*.view.tsx`     | Presentational component — props in, UI out                      |
-| `*.styles.ts`    | Inline style objects                                             |
-| `index.tsx/ts`   | Wires everything together and exports the public API             |
+Each feature is a self-contained folder. The public surface is `index.ts(x)`; everything
+else is internal. Within a feature the code is split into three layers — a thin **container**
+at the root, a **presentational** layer under `components/`, and a **pure logic** layer under
+`model/` — with tests in `__tests__/`.
+
+```
+features/messageComposer/
+├─ index.ts                       # public export — the only thing other features import
+├─ MessageComposer.tsx            # container — calls the hook, spreads props into the view
+├─ MessageComposer.use.ts         # hook — state, effects, send + rollback handlers
+├─ MessageComposer.types.ts       # types and prop shapes
+├─ components/                    # presentational layer — props in, UI out (no data fetching)
+│  ├─ MessageComposer.view.tsx
+│  ├─ MessageComposerTextarea.tsx
+│  ├─ MessageComposerSendButton.tsx
+│  ├─ MessageComposer.styles.ts
+│  └─ MessageComposer.constants.ts
+├─ model/                         # pure logic — no React, easy to unit-test
+│  ├─ MessageComposer.api.ts      # adapter over the shared API client
+│  └─ MessageComposer.utils.ts
+└─ __tests__/
+   ├─ MessageComposer.view.test.tsx
+   └─ MessageComposer.api.test.ts
+```
+
+Features that own shared state keep their context and provider at the feature root next to the
+container (e.g. `Auth.context.tsx` + `AuthProvider.tsx`, `ChatSelection.context.ts` +
+`ChatSelectionProvider.tsx`, `MessageThread.context.ts` + `MessageThreadProvider.tsx`).
+
+Two features nest a smaller sub-feature that follows the exact same anatomy:
+`conversationList/conversation/` (a single conversation row) and `messageList/message/`
+(a single message bubble + skeleton).
+
+---
+
+## File convention
+
+| File              | Role                                                            |
+| ----------------- | --------------------------------------------------------------- |
+| `*.tsx` (root)    | Container — wires the hook to the view, exported via `index`    |
+| `*.use.ts`        | React hook — state, effects, handlers                           |
+| `*.types.ts`      | TypeScript types and prop shapes                                |
+| `*.context.ts(x)` | `createContext` + accessor hook                                 |
+| `*Provider.tsx`   | Context provider component                                      |
+| `*.view.tsx`      | Presentational component — props in, UI out                     |
+| `*.styles.ts`     | Inline style objects                                            |
+| `*.constants.ts`  | Magic values — sizes, labels, timeouts                          |
+| `*.reducer.ts`    | Pure reducer + initial state                                    |
+| `*.api.ts`        | Adapter over the shared API client                              |
+| `*.storage.ts`    | Read / write to `localStorage`                                  |
+| `*.utils.ts`      | Pure utility functions                                          |
+| `index.ts(x)`     | Wires everything together and exports the public API            |
 
 ---
 
 ## Folder responsibilities
 
-| Folder                  | Responsibility                                                     |
-| ----------------------- | ------------------------------------------------------------------ |
-| `src/entities`          | Shared domain types — `User`, `Conversation`, `Message`            |
-| `src/shared/chatApi`    | Mocked API client + response types                                 |
-| `src/shared/styles`     | Global style tokens (colors)                                       |
-| `src/auth`              | Login flow, auth context, reducer state machine, localStorage      |
-| `src/chatPage`          | Layout shell + `ChatSelectionContext`                              |
-| `src/conversationList`  | List of conversations — loading, empty, error states               |
-| `src/conversation`      | Single conversation row — Container + Context pattern              |
-| `src/messageList`       | Message thread — fetches on selection change, auto-scroll          |
-| `src/message`           | Single message bubble + skeleton                                   |
-| `src/messageComposer`   | Composer — optimistic send + rollback on failure                   |
-| `src/toast`             | Global error toast                                                 |
+| Folder                          | Responsibility                                                  |
+| ------------------------------- | --------------------------------------------------------------- |
+| `src/shared/entities`           | Shared domain types — `User`, `Conversation`, `Message`         |
+| `src/shared/api`                | Mocked API client, mock server, and seed data                   |
+| `src/shared/styles`             | Global style tokens (colors)                                    |
+| `src/features/auth`             | Login flow, auth context, reducer state machine, `localStorage` |
+| `src/features/chatPage`         | Layout shell + the three chat context providers                 |
+| `src/features/conversationList` | List of conversations — loading, empty, error states            |
+| `src/features/messageList`      | Message thread — fetches on selection change, auto-scroll       |
+| `src/features/messageComposer`  | Composer — optimistic send + rollback on failure                |
+| `src/features/toast`            | Global error toast                                              |

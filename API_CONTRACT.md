@@ -2,10 +2,13 @@
 
 This document defines the contract between the chat frontend and the backend.
 Week 2 implements it as a typed in-memory mock. The shared API client
-(`src/shared/chatApi/apiClient.ts`) is only the request layer. Mock storage and
-mutation live behind it, and each feature owns the small adapter that turns
-those minimal requests into the behavior it needs. Week 3 implements the same
-shapes server-side. If the contract changes, update this file.
+(`src/shared/api/apiClient.ts`) is only the request layer — it adds latency and
+delegates to the mock server (`src/shared/api/mockServer.ts`), which reads and
+mutates the seed data (`src/shared/api/mokeapi.ts`). Each feature owns the small
+adapter that turns those minimal requests into the behavior it needs, kept in its
+`model/*.api.ts` (e.g. `messageComposer/model/MessageComposer.api.ts`). Domain
+types live in `src/shared/entities`. Week 3 implements the same shapes
+server-side. If the contract changes, update this file.
 
 All request/response bodies are JSON. Authenticated endpoints expect an
 `Authorization: Bearer <token>` header (the token is returned by `POST /auth/login`).
