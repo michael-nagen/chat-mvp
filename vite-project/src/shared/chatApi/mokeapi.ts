@@ -1,4 +1,6 @@
-import type { Conversation, Message, User } from './../contract/contract';
+import type { Conversation } from '../../entities/Conversation.types';
+import type { Message } from '../../entities/Message.types';
+import type { User } from '../../entities/User.types';
 
 
 /** Seed accounts available for mock login. */
