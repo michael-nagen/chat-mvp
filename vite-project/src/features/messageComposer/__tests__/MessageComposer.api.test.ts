@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { sendUserMessage } from './MessageComposer.api';
+import { sendUserMessage } from '../model/MessageComposer.api';
 
 describe('sendUserMessage', () => {
   it('returns a user message with the given content', async () => {

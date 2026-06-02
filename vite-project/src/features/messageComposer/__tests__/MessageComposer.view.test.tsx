@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { MessageComposerView } from './MessageComposer.view';
+import { MessageComposerView } from '../components/MessageComposer.view';
 
 describe('MessageComposerView', () => {
   it('disables Send when the input is empty', () => {

@@ -1,5 +1,5 @@
-import { useMessageComposer } from "./MessageComposer.use";
-import { MessageComposerView } from "./MessageComposer.view";
+import { useMessageComposer } from './MessageComposer.use';
+import { MessageComposerView } from './components/MessageComposer.view';
 
 /** Self-contained composer — manages draft, send, and rollback for the selected conversation. */
 export function MessageComposer(): React.JSX.Element {
