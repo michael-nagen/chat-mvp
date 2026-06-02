@@ -32,7 +32,21 @@ export type AuthContextValue = {
 export type AuthScreenViewProps = {
   name: string;
   onNameChange: (value: string) => void;
-  onSubmit: () => void;
+  onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
+  submittable: boolean;
   isLoading: boolean;
   error: string | null;
+};
+
+/** Props for the controlled name input. */
+export type AuthNameFieldProps = {
+  name: string;
+  onNameChange: (value: string) => void;
+  isLoading: boolean;
+};
+
+/** Props for the login submit button. */
+export type AuthSubmitButtonProps = {
+  submittable: boolean;
+  isLoading: boolean;
 };

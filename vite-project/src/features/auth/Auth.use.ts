@@ -1,10 +1,10 @@
 import { useEffect, useReducer, useState } from 'react';
-import { loginByName } from './Auth.api';
+import { loginByName } from './model/Auth.api';
 import type { AuthContextValue, AuthScreenViewProps } from './Auth.types';
 import { useAuth } from './Auth.context';
-import { authReducer, initialAuthState } from './Auth.reducer';
-import { readStoredAuth, writeStoredAuth } from './Auth.storage';
-import { canSubmit } from './Auth.utils';
+import { authReducer, initialAuthState } from './model/Auth.reducer';
+import { readStoredAuth, writeStoredAuth } from './model/Auth.storage';
+import { canSubmit } from './model/Auth.utils';
 
 /** Drives the auth provider: wires useReducer, localStorage restore, and the login callback. */
 export function useAuthController(): AuthContextValue {
@@ -46,32 +46,21 @@ export function useAuthScreen(): AuthScreenViewProps {
   const { status, error, login } = useAuth();
   const [name, setName] = useState('');
 
-  function onSubmit(): void {
-    const trimmed = name.trim();
-    if (!trimmed) return;
-    void login(trimmed);
+  const isLoading = status === 'loading';
+  const submittable = canSubmit(name, isLoading);
+
+  function onSubmit(event: React.FormEvent<HTMLFormElement>): void {
+    event.preventDefault();
+    if (!submittable) return;
+    void login(name.trim());
   }
 
   return {
     name,
     onNameChange: setName,
     onSubmit,
-    isLoading: status === 'loading',
+    submittable,
+    isLoading,
     error,
   };
-}
-
-export type AuthScreenHandlers = { submittable: boolean; handleSubmit: (event: React.FormEvent<HTMLFormElement>) => void };
-
-/** Derives submittable state and a form submit handler from AuthScreenViewProps. */
-export function useAuthScreenView(props: AuthScreenViewProps): AuthScreenHandlers {
-  const submittable = canSubmit(props.name, props.isLoading);
-
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>): void {
-    event.preventDefault();
-    if (!submittable) return;
-    props.onSubmit();
-  }
-
-  return { submittable, handleSubmit };
 }

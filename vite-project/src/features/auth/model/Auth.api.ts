@@ -1,5 +1,5 @@
-import type { User } from '../../shared/entities/User.types';
-import { requestLogin } from '../../shared/api/apiClient';
+import type { User } from '../../../shared/entities/User.types';
+import { requestLogin } from '../../../shared/api/apiClient';
 
 export type LoginResponse = {
   token: string;

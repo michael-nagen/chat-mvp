@@ -1,4 +1,4 @@
-import type { User } from '../../shared/entities/User.types';
+import type { User } from '../../../shared/entities/User.types';
 import { AUTH_STORAGE_KEY } from './Auth.constants';
 
 type StoredAuth = { user: User; token: string };

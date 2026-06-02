@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import { colors } from '../../shared/styles/colors';
+import { colors } from '../../../shared/styles/colors';
 
 export const authStyles = {
   overlay: {
