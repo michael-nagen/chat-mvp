@@ -1,6 +1,6 @@
 import { useToast } from './Toast.context';
 import { useAutoDismiss } from './Toast.use';
-import { ToastView } from './Toast.view';
+import { ToastView } from './components/Toast.view';
 
 /** Self-contained toast — reads the global toast message and auto-dismisses after 3 s. */
 export function Toast(): React.JSX.Element | null {

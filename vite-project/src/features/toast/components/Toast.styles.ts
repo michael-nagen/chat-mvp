@@ -1,5 +1,5 @@
-import { colors } from '../../shared/styles/colors';
-import { TOAST_Z_INDEX } from './Toast.constants';
+import { colors } from '../../../shared/styles/colors';
+import { TOAST_Z_INDEX } from '../Toast.constants';
 
 export const toastStyles = {
   root: {

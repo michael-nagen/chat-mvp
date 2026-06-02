@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import { AUTO_DISMISS_MS } from "./Toast.constants";
+import { useEffect } from 'react';
+import { AUTO_DISMISS_MS } from './Toast.constants';
 
 /** Calls onDismiss after AUTO_DISMISS_MS while `active` is true. */
 export function useAutoDismiss(

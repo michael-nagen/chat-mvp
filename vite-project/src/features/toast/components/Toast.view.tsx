@@ -1,6 +1,5 @@
+import type { ToastViewProps } from '../Toast.types';
 import { toastStyles } from './Toast.styles';
-
-type ToastViewProps = { message: string; onDismiss: () => void };
 
 /** Renders a fixed-position error banner at the bottom of the screen with a dismiss button. */
 export function ToastView({ message, onDismiss }: ToastViewProps): React.JSX.Element {
