@@ -1,0 +1,30 @@
+import { useCallback, useReducer } from 'react';
+import type { Message } from '../../shared/entities/Message.types';
+import type { MessageThreadContextValue } from './MessageThread.types';
+import { messageThreadReducer, initialMessageThreadState } from './model/MessageThread.reducer';
+
+/** Owns the thread's message array and exposes the only writes allowed against it. */
+export function useMessageThreadController(): MessageThreadContextValue {
+  const [messages, dispatch] = useReducer(messageThreadReducer, initialMessageThreadState);
+
+  // dispatch is stable, so these actions keep a stable identity across renders —
+  // consumers can safely list them as effect dependencies.
+  const replaceMessages = useCallback(
+    (next: Message[]) => dispatch({ type: 'REPLACE', messages: next }),
+    [],
+  );
+  const addOptimisticMessage = useCallback(
+    (message: Message) => dispatch({ type: 'ADD_OPTIMISTIC', message }),
+    [],
+  );
+  const confirmMessage = useCallback(
+    (tempId: string, message: Message) => dispatch({ type: 'CONFIRM', tempId, message }),
+    [],
+  );
+  const rollbackMessage = useCallback(
+    (tempId: string) => dispatch({ type: 'ROLLBACK', tempId }),
+    [],
+  );
+
+  return { messages, replaceMessages, addOptimisticMessage, confirmMessage, rollbackMessage };
+}

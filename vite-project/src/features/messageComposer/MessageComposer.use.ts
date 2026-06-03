@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { MessageComposerViewProps } from './MessageComposer.types';
 import { useChatSelection } from '../chatPage/ChatSelection.context';
-import { useMessageThread } from '../messageList/MessageThread.context';
+import { useMessageThread } from '../messageThread';
 import { sendUserMessage } from './model/MessageComposer.api';
 import { useToast } from '../toast';
 import {
@@ -17,7 +17,7 @@ import {
  */
 export function useMessageComposer(): MessageComposerViewProps {
   const { selectedConversationId } = useChatSelection();
-  const { setMessages } = useMessageThread();
+  const { addOptimisticMessage, confirmMessage, rollbackMessage } = useMessageThread();
   const { showToast } = useToast();
   const [draft, setDraft] = useState({ conversationId: selectedConversationId, value: '' });
   const [isSending, setIsSending] = useState(false);
@@ -36,15 +36,15 @@ export function useMessageComposer(): MessageComposerViewProps {
     const optimisticMessage = createOptimisticMessage(selectedConversationId, trimmed);
     const tempId = optimisticMessage.id;
 
-    setMessages((prev) => [...prev, optimisticMessage]);
+    addOptimisticMessage(optimisticMessage);
     setValue('');
     setIsSending(true);
 
     try {
       const res = await sendUserMessage(selectedConversationId, trimmed);
-      setMessages((prev) => prev.map((m) => (m.id === tempId ? res.message : m)));
+      confirmMessage(tempId, res.message);
     } catch (err) {
-      setMessages((prev) => prev.filter((m) => m.id !== tempId));
+      rollbackMessage(tempId);
       setDraft({ conversationId: selectedConversationId, value: trimmed });
       showToast(err instanceof Error ? err.message : 'Failed to send message');
     } finally {

@@ -1,13 +1,12 @@
-import { useState } from 'react';
 import type { ReactNode } from 'react';
-import type { Message } from '../../shared/entities/Message.types';
 import { MessageThreadContext } from './MessageThread.context';
+import { useMessageThreadController } from './MessageThread.use';
 
 export function MessageThreadProvider({ children }: { children: ReactNode }): React.JSX.Element {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const value = useMessageThreadController();
 
   return (
-    <MessageThreadContext.Provider value={{ messages, setMessages }}>
+    <MessageThreadContext.Provider value={value}>
       {children}
     </MessageThreadContext.Provider>
   );

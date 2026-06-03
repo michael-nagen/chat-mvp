@@ -2,13 +2,13 @@ import { useEffect, useReducer } from 'react';
 import type { MessageListViewProps } from './MessageList.types';
 import { useChatSelection } from '../chatPage/ChatSelection.context';
 import { getConversationMessages } from './model/MessageList.api';
-import { useMessageThread } from './MessageThread.context';
+import { useMessageThread } from '../messageThread';
 import { messageListReducer, initialMessageListState } from './model/MessageList.reducer';
 
 /** Fetches messages for the selected conversation and exposes loading/error state. */
 export function useMessageList(): MessageListViewProps {
   const { selectedConversationId } = useChatSelection();
-  const { messages, setMessages } = useMessageThread();
+  const { messages, replaceMessages } = useMessageThread();
   const [state, dispatch] = useReducer(messageListReducer, initialMessageListState);
 
   useEffect(() => {
@@ -21,7 +21,7 @@ export function useMessageList(): MessageListViewProps {
     getConversationMessages(selectedConversationId)
       .then((res) => {
         if (cancelled) return;
-        setMessages(res.messages);
+        replaceMessages(res.messages);
         dispatch({ type: 'LOAD_SUCCESS' });
       })
       .catch((err) => {
@@ -32,7 +32,7 @@ export function useMessageList(): MessageListViewProps {
         });
       });
     return () => { cancelled = true; };
-  }, [selectedConversationId, setMessages]);
+  }, [selectedConversationId, replaceMessages]);
 
   return {
     messages,

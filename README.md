@@ -45,7 +45,7 @@ flowchart TD
     chatSelectionCtx -- "selectConversation(id)" --> convRow["ConversationRow"]
 
     messageThreadCtx -- "messages" --> msgList
-    messageThreadCtx -- "setMessages" --> msgComposer
+    messageThreadCtx -- "add / confirm / rollback" --> msgComposer
 
     toastCtx -- "showToast" --> msgComposer
 ```
@@ -81,7 +81,11 @@ features/messageComposer/
 
 Features that own shared state keep their context and provider at the feature root next to the
 container (e.g. `Auth.context.tsx` + `AuthProvider.tsx`, `ChatSelection.context.ts` +
-`ChatSelectionProvider.tsx`, `MessageThread.context.ts` + `MessageThreadProvider.tsx`).
+`ChatSelectionProvider.tsx`, `MessageThread.context.ts` + `MessageThreadProvider.tsx`). The
+provider stays thin by delegating to a composing **controller hook** that owns the reducer and
+exposes only named actions — never a raw setter — so the state has a single owner and every
+consumer is limited to the writes the controller defines (`useAuthController`,
+`useMessageThreadController`).
 
 Two features nest a smaller sub-feature that follows the exact same anatomy:
 `conversationList/conversation/` (a single conversation row) and `messageList/message/`
@@ -119,6 +123,7 @@ Two features nest a smaller sub-feature that follows the exact same anatomy:
 | `src/features/auth`             | Login flow, auth context, reducer state machine, `localStorage` |
 | `src/features/chatPage`         | Layout shell + the three chat context providers                 |
 | `src/features/conversationList` | List of conversations — loading, empty, error states            |
-| `src/features/messageList`      | Message thread — fetches on selection change, auto-scroll       |
+| `src/features/messageThread`    | Message store — owns the array via a controller + named actions |
+| `src/features/messageList`      | Message list — fetches on selection change, auto-scroll         |
 | `src/features/messageComposer`  | Composer — optimistic send + rollback on failure                |
 | `src/features/toast`            | Global error toast                                              |
