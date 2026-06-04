@@ -17,3 +17,27 @@ export class NotImplementedError extends AppError {
     super(501, ErrorCodes.NOT_IMPLEMENTED, message);
   }
 }
+
+export class ValidationError extends AppError {
+  constructor(message = 'Invalid request.') {
+    super(400, ErrorCodes.VALIDATION_ERROR, message);
+  }
+}
+
+export class UnauthorizedError extends AppError {
+  constructor(message = 'Unauthorized.') {
+    super(401, ErrorCodes.UNAUTHORIZED, message);
+  }
+}
+
+export class UserNotFoundError extends AppError {
+  constructor(message = 'User not found.') {
+    super(404, ErrorCodes.USER_NOT_FOUND, message);
+  }
+}
+
+export class ConversationNotFoundError extends AppError {
+  constructor(message = 'Conversation not found.') {
+    super(404, ErrorCodes.CONVERSATION_NOT_FOUND, message);
+  }
+}
