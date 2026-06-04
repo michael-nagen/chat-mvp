@@ -1,6 +1,6 @@
 import { LoginResult } from './auth.types';
 import { UnauthorizedError } from '../../shared/errors/AppError';
-import { authRepository } from './repo';
+import { authRepository } from './auth.repo';
 
 export const authService = {
   login(name: string): LoginResult {

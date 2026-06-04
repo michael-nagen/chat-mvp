@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { messageRepository } from '../index';
-import type { Message } from '../../messages.types';
+import { messageRepository } from '../messages.repo';
+import type { Message } from '../messages.types';
 
 const makeMessage = (overrides: Partial<Message> = {}): Message => ({
   id: 'm-test',
@@ -20,6 +20,28 @@ describe('messageRepository.findByConversation', () => {
 
   it('returns an empty array for a conversation with no messages', () => {
     expect(messageRepository.findByConversation('c-empty')).toEqual([]);
+  });
+});
+
+describe('messageRepository.findPage', () => {
+  it('returns at most limit + 1 records, ordered oldest -> newest', () => {
+    const result = messageRepository.findPage('c1', undefined, 2);
+    expect(result).toHaveLength(3); // limit (2) + 1 lookahead
+    expect(result.map((m) => m.id)).toEqual(['m1', 'm2', 'm3']);
+  });
+
+  it('starts just after the given cursor', () => {
+    const result = messageRepository.findPage('c1', 'm1', 2);
+    expect(result.map((m) => m.id)).toEqual(['m2', 'm3']);
+  });
+
+  it('returns fewer than limit + 1 when the conversation is exhausted', () => {
+    const result = messageRepository.findPage('c1', undefined, 50);
+    expect(result.length).toBeLessThan(51);
+  });
+
+  it('returns an empty array for a conversation with no messages', () => {
+    expect(messageRepository.findPage('c-empty', undefined, 20)).toEqual([]);
   });
 });
 

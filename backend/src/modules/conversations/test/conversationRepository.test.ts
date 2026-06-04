@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { conversationRepository } from '../index';
-import type { Conversation } from '../../conversations.types';
+import { conversationRepository } from '../conversations.repo';
+import type { Conversation } from '../conversations.types';
 
 const makeConversation = (overrides: Partial<Conversation> = {}): Conversation => ({
   id: 'c-test',

@@ -1,8 +1,8 @@
 import { UnauthorizedError, ValidationError } from '../../shared/errors/AppError';
 import { asyncHandler } from '../../shared/http/asyncHandler';
 import { HTTP_STATUS } from '../../shared/http/httpStatus';
-import { createMessageSchema } from './messages.schemas';
-import { messageService } from './messages.service';
+import { createMessageSchema, listMessagesQuerySchema } from './messages.schemas';
+import { messageOrchestrator } from './messages.orchestrator';
 import { Message } from './messages.types';
 
 // Maps the stored message to the FE contract shape. The `sender` role is
@@ -22,10 +22,16 @@ export const listMessages = asyncHandler((req, res) => {
     throw new UnauthorizedError();
   }
 
-  const messages = messageService.getMessages(req.params.id, userId);
+  const parsed = listMessagesQuerySchema.safeParse(req.query);
+  if (!parsed.success) {
+    throw new ValidationError(parsed.error.issues[0]?.message ?? 'Invalid query parameters.');
+  }
+
+  const { cursor, limit } = parsed.data;
+  const page = messageOrchestrator.listMessages(req.params.id, userId, { cursor, limit });
   res.status(HTTP_STATUS.OK).json({
-    messages: messages.map((message) => toResponse(message, userId)),
-    nextCursor: null,
+    messages: page.messages.map((message) => toResponse(message, userId)),
+    nextCursor: page.nextCursor,
   });
 });
 
@@ -40,6 +46,6 @@ export const createMessage = asyncHandler((req, res) => {
     throw new ValidationError(parsed.error.issues[0]?.message ?? 'Invalid request body.');
   }
 
-  const message = messageService.createMessage(req.params.id, userId, parsed.data.content);
+  const message = messageOrchestrator.createMessage(req.params.id, userId, parsed.data.content);
   res.status(HTTP_STATUS.CREATED).json({ message: toResponse(message, userId) });
 });

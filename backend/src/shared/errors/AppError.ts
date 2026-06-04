@@ -12,12 +12,6 @@ export class AppError extends Error {
   }
 }
 
-export class NotImplementedError extends AppError {
-  constructor(message = 'Not implemented.') {
-    super(501, ErrorCodes.NOT_IMPLEMENTED, message);
-  }
-}
-
 export class ValidationError extends AppError {
   constructor(message = 'Invalid request.') {
     super(400, ErrorCodes.VALIDATION_ERROR, message);
@@ -27,12 +21,6 @@ export class ValidationError extends AppError {
 export class UnauthorizedError extends AppError {
   constructor(message = 'Unauthorized.') {
     super(401, ErrorCodes.UNAUTHORIZED, message);
-  }
-}
-
-export class UserNotFoundError extends AppError {
-  constructor(message = 'User not found.') {
-    super(404, ErrorCodes.USER_NOT_FOUND, message);
   }
 }
 

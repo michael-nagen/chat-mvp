@@ -1,6 +1,6 @@
 import { RequestHandler } from 'express';
 import { UnauthorizedError } from '../errors/AppError';
-import { authRepository } from '../../modules/auth/repo';
+import { authRepository } from '../../modules/auth/auth.repo';
 
 const TOKEN_PREFIX = 'mock-token-';
 

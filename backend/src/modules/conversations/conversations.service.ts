@@ -1,4 +1,4 @@
-import { conversationRepository } from './repo';
+import { conversationRepository } from './conversations.repo';
 import { Conversation } from './conversations.types';
 
 const updatedTime = (conversation: Conversation): number =>

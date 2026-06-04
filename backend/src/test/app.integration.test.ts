@@ -66,6 +66,30 @@ describe('messages routes', () => {
     expect(res.body.messages.length).toBeGreaterThanOrEqual(3);
   });
 
+  it('paginates with limit and cursor', async () => {
+    const first = await request(app)
+      .get('/conversations/c1/messages?limit=2')
+      .set(authHeader('u1'));
+    expect(first.status).toBe(200);
+    expect(first.body.messages).toHaveLength(2);
+    expect(first.body.nextCursor).toBe(first.body.messages[1].id);
+
+    const second = await request(app)
+      .get(`/conversations/c1/messages?limit=2&cursor=${first.body.nextCursor}`)
+      .set(authHeader('u1'));
+    expect(second.status).toBe(200);
+    // The second page picks up after the first page's last message.
+    expect(second.body.messages[0].id).not.toBe(first.body.messages[1].id);
+  });
+
+  it('rejects an invalid limit with 400', async () => {
+    const res = await request(app)
+      .get('/conversations/c1/messages?limit=abc')
+      .set(authHeader('u1'));
+    expect(res.status).toBe(400);
+    expect(res.body.error.code).toBe('VALIDATION_ERROR');
+  });
+
   it('labels the sender of the caller own messages as "user"', async () => {
     const res = await request(app).get('/conversations/c1/messages').set(authHeader('u1'));
     const own = res.body.messages.find((m: { id: string }) => m.id === 'm1');

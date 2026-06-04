@@ -2,7 +2,7 @@ import { UnauthorizedError, ValidationError } from '../../shared/errors/AppError
 import { asyncHandler } from '../../shared/http/asyncHandler';
 import { HTTP_STATUS } from '../../shared/http/httpStatus';
 import { createConversationSchema } from './conversations.schemas';
-import { conversationService } from './conversations.service';
+import { conversationOrchestrator } from './conversations.orchestrator';
 
 export const listConversations = asyncHandler((req, res) => {
   const userId = req.userId;
@@ -10,7 +10,7 @@ export const listConversations = asyncHandler((req, res) => {
     throw new UnauthorizedError();
   }
 
-  const conversations = conversationService.getForUser(userId);
+  const conversations = conversationOrchestrator.getForUser(userId);
   res.status(HTTP_STATUS.OK).json({ conversations });
 });
 
@@ -25,6 +25,6 @@ export const createConversation = asyncHandler((req, res) => {
     throw new ValidationError(parsed.error.issues[0]?.message ?? 'Invalid request body.');
   }
 
-  const conversation = conversationService.createConversation({ title: parsed.data.title, userId });
+  const conversation = conversationOrchestrator.createConversation({ title: parsed.data.title, userId });
   res.status(HTTP_STATUS.CREATED).json(conversation);
 });

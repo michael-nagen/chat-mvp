@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { authRepository } from '../index';
+import { authRepository } from '../auth.repo';
 
 describe('authRepository.findById', () => {
   it('returns the user for a known id', () => {
