@@ -1,3 +1,4 @@
+import { HTTP_STATUS } from '../http/httpStatus';
 import { ErrorCode, ErrorCodes } from './errorCodes';
 
 export class AppError extends Error {
@@ -14,18 +15,18 @@ export class AppError extends Error {
 
 export class ValidationError extends AppError {
   constructor(message = 'Invalid request.') {
-    super(400, ErrorCodes.VALIDATION_ERROR, message);
+    super(HTTP_STATUS.BAD_REQUEST, ErrorCodes.VALIDATION_ERROR, message);
   }
 }
 
 export class UnauthorizedError extends AppError {
   constructor(message = 'Unauthorized.') {
-    super(401, ErrorCodes.UNAUTHORIZED, message);
+    super(HTTP_STATUS.UNAUTHORIZED, ErrorCodes.UNAUTHORIZED, message);
   }
 }
 
 export class ConversationNotFoundError extends AppError {
   constructor(message = 'Conversation not found.') {
-    super(404, ErrorCodes.CONVERSATION_NOT_FOUND, message);
+    super(HTTP_STATUS.NOT_FOUND, ErrorCodes.CONVERSATION_NOT_FOUND, message);
   }
 }

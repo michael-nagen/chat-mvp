@@ -1,9 +1,6 @@
 import { Message } from './messages.types';
 import { messages } from '../../shared/store/inMemoryStore';
 
-const findByConversation = (conversationId: string): Message[] =>
-  messages.filter((message) => message.conversationId === conversationId);
-
 const byCreatedAtAsc = (a: Message, b: Message): number =>
   new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
 
@@ -35,7 +32,6 @@ const insert = (message: Message): Message => {
 };
 
 export const messageRepository = {
-  findByConversation,
   findPage,
   insert,
 };

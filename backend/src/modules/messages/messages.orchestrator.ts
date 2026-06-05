@@ -1,7 +1,7 @@
 import { conversationOrchestrator } from '../conversations/conversations.orchestrator';
 import { ConversationNotFoundError } from '../../shared/errors/AppError';
-import { GetMessagesOptions, MessagePage, messageService } from './messages.service';
-import { Message } from './messages.types';
+import { messageService } from './messages.service';
+import { GetMessagesOptions, Message, MessagePage } from './messages.types';
 
 // A user may only touch a conversation they're a participant of. A non-member
 // is treated the same as a missing conversation (404) so ids can't be probed.

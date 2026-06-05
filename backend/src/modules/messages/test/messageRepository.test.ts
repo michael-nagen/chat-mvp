@@ -11,18 +11,6 @@ const makeMessage = (overrides: Partial<Message> = {}): Message => ({
   ...overrides,
 });
 
-describe('messageRepository.findByConversation', () => {
-  it('returns only messages of the given conversation', () => {
-    const result = messageRepository.findByConversation('c1');
-    expect(result.length).toBeGreaterThanOrEqual(3);
-    expect(result.every((m) => m.conversationId === 'c1')).toBe(true);
-  });
-
-  it('returns an empty array for a conversation with no messages', () => {
-    expect(messageRepository.findByConversation('c-empty')).toEqual([]);
-  });
-});
-
 describe('messageRepository.findPage', () => {
   it('returns at most limit + 1 records, ordered oldest -> newest', () => {
     const result = messageRepository.findPage('c1', undefined, 2);
@@ -50,6 +38,6 @@ describe('messageRepository.insert', () => {
     const message = makeMessage({ id: 'm-insert-1', conversationId: 'c-insert-target' });
     const returned = messageRepository.insert(message);
     expect(returned).toBe(message);
-    expect(messageRepository.findByConversation('c-insert-target')).toContainEqual(message);
+    expect(messageRepository.findPage('c-insert-target', undefined, 20)).toContainEqual(message);
   });
 });

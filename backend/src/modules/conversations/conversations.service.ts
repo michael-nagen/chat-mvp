@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { conversationRepository } from './conversations.repo';
 import { Conversation } from './conversations.types';
 
@@ -14,7 +15,7 @@ export const conversationService = {
   createConversation(input: { title: string; userId: string }): Conversation {
     const now = new Date();
     const conversation: Conversation = {
-      id: `c-${now.getTime()}`,
+      id: `c-${randomUUID()}`,
       title: input.title,
       participantIds: [input.userId],
       lastMessage: '',

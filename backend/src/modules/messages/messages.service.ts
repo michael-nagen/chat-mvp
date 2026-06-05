@@ -1,15 +1,6 @@
+import { randomUUID } from 'crypto';
 import { messageRepository } from './messages.repo';
-import { Message } from './messages.types';
-
-export type MessagePage = {
-  messages: Message[];
-  nextCursor: string | null;
-};
-
-export type GetMessagesOptions = {
-  cursor?: string;
-  limit: number;
-};
+import { GetMessagesOptions, Message, MessagePage } from './messages.types';
 
 export const messageService = {
   getMessages(conversationId: string, options: GetMessagesOptions): MessagePage {
@@ -27,7 +18,7 @@ export const messageService = {
   createMessage(conversationId: string, senderId: string, content: string): Message {
     const now = new Date();
     const message: Message = {
-      id: `m-${now.getTime()}`,
+      id: `m-${randomUUID()}`,
       conversationId,
       senderId,
       content,

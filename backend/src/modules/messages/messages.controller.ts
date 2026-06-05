@@ -1,7 +1,7 @@
-import { UnauthorizedError, ValidationError } from '../../shared/errors/AppError';
+import { UnauthorizedError } from '../../shared/errors/AppError';
 import { asyncHandler } from '../../shared/http/asyncHandler';
 import { HTTP_STATUS } from '../../shared/http/httpStatus';
-import { createMessageSchema, listMessagesQuerySchema } from './messages.schemas';
+import { CreateMessageBody, ListMessagesQuery } from './messages.schemas';
 import { messageOrchestrator } from './messages.orchestrator';
 import { Message } from './messages.types';
 
@@ -22,13 +22,8 @@ export const listMessages = asyncHandler((req, res) => {
     throw new UnauthorizedError();
   }
 
-  const parsed = listMessagesQuerySchema.safeParse(req.query);
-  if (!parsed.success) {
-    throw new ValidationError(parsed.error.issues[0]?.message ?? 'Invalid query parameters.');
-  }
-
-  const { cursor, limit } = parsed.data;
-  const page = messageOrchestrator.listMessages(req.params.id, userId, { cursor, limit });
+  const { cursor, limit } = req.query as unknown as ListMessagesQuery;
+  const page = messageOrchestrator.listMessages(req.params.conversationId, userId, { cursor, limit });
   res.status(HTTP_STATUS.OK).json({
     messages: page.messages.map((message) => toResponse(message, userId)),
     nextCursor: page.nextCursor,
@@ -41,11 +36,7 @@ export const createMessage = asyncHandler((req, res) => {
     throw new UnauthorizedError();
   }
 
-  const parsed = createMessageSchema.safeParse(req.body);
-  if (!parsed.success) {
-    throw new ValidationError(parsed.error.issues[0]?.message ?? 'Invalid request body.');
-  }
-
-  const message = messageOrchestrator.createMessage(req.params.id, userId, parsed.data.content);
+  const { content } = req.body as CreateMessageBody;
+  const message = messageOrchestrator.createMessage(req.params.conversationId, userId, content);
   res.status(HTTP_STATUS.CREATED).json({ message: toResponse(message, userId) });
 });

@@ -4,6 +4,8 @@ export const createMessageSchema = z.object({
   content: z.string().min(1, 'content is required.'),
 });
 
+export type CreateMessageBody = z.infer<typeof createMessageSchema>;
+
 // Query params arrive as strings, so `limit` is coerced to a number. Defaults
 // to 20 per the contract; capped so a caller can't request the whole table.
 export const listMessagesQuerySchema = z.object({

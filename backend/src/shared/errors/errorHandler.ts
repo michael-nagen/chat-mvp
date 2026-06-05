@@ -1,4 +1,5 @@
 import { ErrorRequestHandler } from 'express';
+import { HTTP_STATUS } from '../http/httpStatus';
 import { AppError } from './AppError';
 
 export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
@@ -12,7 +13,7 @@ export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
     return;
   }
 
-  res.status(500).json({
+  res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
     error: {
       code: 'INTERNAL_ERROR',
       message: 'An unexpected error occurred.',
