@@ -24,11 +24,10 @@ type RequestOptions = {
   auth?: boolean;
 };
 
-/** Pulls a human-readable message out of either error envelope shape. */
+/** Pulls a human-readable message out of the { error: { code, message } } envelope. */
 function extractErrorMessage(body: unknown, fallback: string): string {
   if (body && typeof body === 'object' && 'error' in body) {
     const error = (body as { error: unknown }).error;
-    if (typeof error === 'string') return error;
     if (error && typeof error === 'object' && 'message' in error) {
       const message = (error as { message: unknown }).message;
       if (typeof message === 'string') return message;

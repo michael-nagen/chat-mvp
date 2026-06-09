@@ -1,18 +1,11 @@
 import { RequestHandler } from 'express';
 import { UnauthorizedError } from '../errors/AppError';
-import { authRepository } from '../../modules/auth/auth.repo';
+import { authOrchestrator } from '../../modules/auth/auth.orchestrator';
 
 const TOKEN_PREFIX = 'mock-token-';
 
-/**
- * Authenticates the request from an `Authorization: Bearer <token>` header.
- * This week the token is a mock `mock-token-<userId>`, so we extract the user
- * id and confirm the user exists. Sets `req.userId` for downstream handlers.
- *
- * When real auth lands, only this middleware changes (verify a real token);
- * the rest of the app keeps reading `req.userId`.
- */
-export const requireAuth: RequestHandler = (req, _res, next) => {
+// Mock tokens for now: `mock-token-<userId>`.
+export const requireAuth: RequestHandler = (req, res, next) => {
   const header = req.header('authorization');
 
   if (!header || !header.startsWith('Bearer ')) {
@@ -27,10 +20,10 @@ export const requireAuth: RequestHandler = (req, _res, next) => {
 
   const userId = token.slice(TOKEN_PREFIX.length);
 
-  if (!authRepository.findById(userId)) {
+  if (!authOrchestrator.getUser(userId)) {
     throw new UnauthorizedError('Invalid token.');
   }
 
-  req.userId = userId;
+  res.locals.userId = userId;
   next();
 };

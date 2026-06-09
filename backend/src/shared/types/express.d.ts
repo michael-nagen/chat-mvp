@@ -1,7 +1,7 @@
-// Augments Express's Request with the authenticated user id set by requireAuth.
+// Augments Express's res.locals with the authenticated user id set by requireAuth.
 declare global {
   namespace Express {
-    interface Request {
+    interface Locals {
       userId?: string;
     }
   }

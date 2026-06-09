@@ -4,14 +4,7 @@ import { messages } from '../../shared/store/inMemoryStore';
 const byCreatedAtAsc = (a: Message, b: Message): number =>
   new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
 
-/**
- * Returns up to `limit + 1` messages for a conversation, oldest -> newest,
- * starting just after `cursor` (a message id). The extra record lets the
- * caller tell whether another page exists without a second query.
- *
- * If `cursor` is omitted the first page is returned. An unknown cursor id
- * (e.g. a deleted message) falls back to the first page.
- */
+// Fetches one past `limit` so the caller can detect a further page.
 const findPage = (
   conversationId: string,
   cursor: string | undefined,

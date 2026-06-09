@@ -28,6 +28,7 @@ describe('messageOrchestrator.createMessage', () => {
 
     expect(message.conversationId).toBe('c1');
     expect(message.content).toBe('Fresh message');
+    expect(message.sender).toBe('user');
 
     const stored = messageOrchestrator.listMessages('c1', 'u1', { limit: 20 });
     expect(stored.messages.some((m) => m.id === message.id)).toBe(true);

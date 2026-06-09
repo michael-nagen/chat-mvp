@@ -4,6 +4,7 @@ import { authRouter } from './modules/auth/auth.routes';
 import { conversationsRouter } from './modules/conversations/conversations.routes';
 import { messagesRouter } from './modules/messages/messages.routes';
 import { errorHandler } from './shared/errors/errorHandler';
+import { NotFoundError } from './shared/errors/AppError';
 import { requestLogger } from './shared/middleware/requestLogger';
 import { requireAuth } from './shared/middleware/requireAuth';
 
@@ -26,9 +27,9 @@ app.use('/auth', authRouter);
 app.use('/conversations', conversationsRouter);
 app.use('/conversations/:conversationId/messages', requireAuth, messagesRouter);
 
-// Unmatched routes return a consistent JSON shape instead of express's default HTML.
-app.use((_req, res) => {
-  res.status(404).json({ error: 'Not Found' });
+// Unmatched routes are funneled through the same error pipeline as everything else.
+app.use((_req, _res, next) => {
+  next(new NotFoundError());
 });
 
 app.use(errorHandler);

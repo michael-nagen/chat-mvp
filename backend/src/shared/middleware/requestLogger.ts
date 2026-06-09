@@ -1,9 +1,5 @@
 import { RequestHandler } from 'express';
 
-/**
- * Logs each request once the response is sent: method, path, status code, and
- * how long it took to handle.
- */
 export const requestLogger: RequestHandler = (req, res, next) => {
   const start = process.hrtime.bigint();
 

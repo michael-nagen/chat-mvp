@@ -4,9 +4,6 @@ import { GetMessagesOptions, Message, MessagePage } from './messages.types';
 
 export const messageService = {
   getMessages(conversationId: string, options: GetMessagesOptions): MessagePage {
-    // The repo returns one extra row (limit + 1). If it came back, there's at
-    // least one more message, so we trim to `limit` and hand back the last id
-    // as the cursor for the next page. Otherwise this is the final page.
     const rows = messageRepository.findPage(conversationId, options.cursor, options.limit);
     const hasMore = rows.length > options.limit;
     const messages = hasMore ? rows.slice(0, options.limit) : rows;

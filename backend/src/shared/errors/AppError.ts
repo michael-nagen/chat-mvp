@@ -25,6 +25,12 @@ export class UnauthorizedError extends AppError {
   }
 }
 
+export class NotFoundError extends AppError {
+  constructor(message = 'The requested resource was not found.') {
+    super(HTTP_STATUS.NOT_FOUND, ErrorCodes.NOT_FOUND, message);
+  }
+}
+
 export class ConversationNotFoundError extends AppError {
   constructor(message = 'Conversation not found.') {
     super(HTTP_STATUS.NOT_FOUND, ErrorCodes.CONVERSATION_NOT_FOUND, message);

@@ -9,16 +9,16 @@ const makeReq = (authorization?: string): Request =>
       name.toLowerCase() === 'authorization' ? authorization : undefined,
   }) as unknown as Request;
 
-const res = {} as Response;
+const res = { locals: {} } as unknown as Response;
 
 describe('requireAuth', () => {
-  it('sets req.userId and calls next for a valid token of a known user', () => {
+  it('sets res.locals.userId and calls next for a valid token of a known user', () => {
     const req = makeReq('Bearer mock-token-u1');
     const next = vi.fn() as unknown as NextFunction;
 
     requireAuth(req, res, next);
 
-    expect(req.userId).toBe('u1');
+    expect(res.locals.userId).toBe('u1');
     expect(next).toHaveBeenCalledOnce();
     expect((next as ReturnType<typeof vi.fn>).mock.calls[0][0]).toBeUndefined();
   });
