@@ -7,3 +7,12 @@ export type Message = {
   sender: SenderRole;
   timestamp: string;
 };
+
+// Wire shape from the backend: senderId is the raw author id, mapped to a caller-relative sender.
+export type RawMessage = {
+  id: string;
+  conversationId: string;
+  content: string;
+  senderId: string;
+  timestamp: string;
+};
