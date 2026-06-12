@@ -1,3 +1,10 @@
 .DS_Store
 node_modules/
 .claude/
+
+# Generated artifacts and scratch files
+outputs/
+presentation-tool-data/
+PR_BODY.md
+PR_SUMMARY.md
+README2.md
