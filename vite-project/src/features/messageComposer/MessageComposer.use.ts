@@ -2,13 +2,13 @@ import { useState } from 'react';
 import type { MessageComposerViewProps } from './MessageComposer.types';
 import { useChatSelection } from '../chatPage/ChatSelection.context';
 import { useMessageThread } from '../messageThread';
-import { sendUserMessage } from './model/MessageComposer.api';
+import { useAuth } from '../auth';
 import { useToast } from '../toast';
 import {
   canSend,
-  createOptimisticMessage,
   createSubmitHandler,
   createKeyDownHandler,
+  sendOptimisticMessage,
 } from './model/MessageComposer.utils';
 
 /**
@@ -18,6 +18,7 @@ import {
 export function useMessageComposer(): MessageComposerViewProps {
   const { selectedConversationId } = useChatSelection();
   const { addOptimisticMessage, confirmMessage, rollbackMessage } = useMessageThread();
+  const { user } = useAuth();
   const { showToast } = useToast();
   const [draft, setDraft] = useState({ conversationId: selectedConversationId, value: '' });
   const [isSending, setIsSending] = useState(false);
@@ -33,28 +34,24 @@ export function useMessageComposer(): MessageComposerViewProps {
     const trimmed = value.trim();
     if (!trimmed) return;
 
-    const optimisticMessage = createOptimisticMessage(selectedConversationId, trimmed);
-    const tempId = optimisticMessage.id;
-
-    addOptimisticMessage(optimisticMessage);
     setValue('');
     setIsSending(true);
-
-    try {
-      const res = await sendUserMessage(selectedConversationId, trimmed);
-      confirmMessage(tempId, res.message);
-    } catch (err) {
-      rollbackMessage(tempId);
+    const result = await sendOptimisticMessage({
+      conversationId: selectedConversationId,
+      content: trimmed,
+      userId: user?.id ?? null,
+      thread: { addOptimisticMessage, confirmMessage, rollbackMessage },
+    });
+    if (!result.ok) {
       setDraft({ conversationId: selectedConversationId, value: trimmed });
-      showToast(err instanceof Error ? err.message : 'Failed to send message');
-    } finally {
-      setIsSending(false);
+      showToast(result.error);
     }
+    setIsSending(false);
   }
 
-  const sendable = canSend(value, isSending);
-  const handleSubmit = createSubmitHandler(sendable, () => void onSend());
-  const handleKeyDown = createKeyDownHandler(sendable, () => void onSend());
+  const sendable = canSend({ value, isSending });
+  const handleSubmit = createSubmitHandler({ sendable, onSend: () => void onSend() });
+  const handleKeyDown = createKeyDownHandler({ sendable, onSend: () => void onSend() });
 
   return { value, onChange: setValue, isSending, sendable, handleSubmit, handleKeyDown };
 }
