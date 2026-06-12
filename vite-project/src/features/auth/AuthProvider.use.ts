@@ -1,10 +1,11 @@
 import { useEffect, useReducer } from 'react';
-import { loginByName } from './model/Auth.api';
+import type { AuthResponse } from './model/Auth.api';
+import { login as loginRequest, signup as signupRequest } from './model/Auth.api';
 import type { AuthContextValue } from './Auth.types';
 import { authReducer, initialAuthState } from './model/Auth.reducer';
-import { readStoredAuth, writeStoredAuth } from './model/Auth.storage';
+import { clearStoredAuth, readStoredAuth, writeStoredAuth } from './model/Auth.storage';
 
-/** Drives the auth provider: wires useReducer, localStorage restore, and the login callback. */
+/** Drives the auth provider: wires useReducer, localStorage restore, and the auth callbacks. */
 export function useAuthController(): AuthContextValue {
   const [state, dispatch] = useReducer(authReducer, initialAuthState);
 
@@ -15,18 +16,23 @@ export function useAuthController(): AuthContextValue {
     }
   }, []);
 
-  async function login(name: string): Promise<void> {
+  async function authenticate(request: () => Promise<AuthResponse>): Promise<void> {
     dispatch({ type: 'LOGIN_START' });
     try {
-      const res = await loginByName(name);
+      const res = await request();
       writeStoredAuth({ user: res.user, token: res.token });
       dispatch({ type: 'LOGIN_SUCCESS', user: res.user, token: res.token });
     } catch (err) {
       dispatch({
         type: 'LOGIN_ERROR',
-        error: err instanceof Error ? err.message : 'Failed to log in',
+        error: err instanceof Error ? err.message : 'Authentication failed',
       });
     }
+  }
+
+  function logout(): void {
+    clearStoredAuth();
+    dispatch({ type: 'LOGOUT' });
   }
 
   return {
@@ -35,6 +41,9 @@ export function useAuthController(): AuthContextValue {
     token: state.token,
     error: state.error,
     isAuthenticated: state.status === 'authenticated' && state.user !== null,
-    login,
+    login: (email, password) => authenticate(() => loginRequest({ email, password })),
+    signup: (email, password, name) =>
+      authenticate(() => signupRequest({ email, password, name })),
+    logout,
   };
 }

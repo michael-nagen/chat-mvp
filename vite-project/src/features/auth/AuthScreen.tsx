@@ -1,8 +1,13 @@
 import { useAuthScreen } from './AuthScreen.use';
+import { AuthScreenContext } from './AuthScreen.context';
 import { AuthScreenView } from './components/Auth.view';
 
 export function AuthScreen(): React.JSX.Element {
   const viewProps = useAuthScreen();
 
-  return <AuthScreenView {...viewProps} />;
+  return (
+    <AuthScreenContext.Provider value={viewProps}>
+      <AuthScreenView />
+    </AuthScreenContext.Provider>
+  );
 }

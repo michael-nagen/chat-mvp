@@ -11,12 +11,16 @@ export type AuthState = {
   error: string | null;
 };
 
+/** Whether the auth screen is signing into an existing account or creating one. */
+export type AuthMode = 'login' | 'signup';
+
 /** Discriminated union of all actions that can be dispatched to the auth reducer. */
 export type AuthAction =
   | { type: 'RESTORE'; user: User; token: string }
   | { type: 'LOGIN_START' }
   | { type: 'LOGIN_SUCCESS'; user: User; token: string }
-  | { type: 'LOGIN_ERROR'; error: string };
+  | { type: 'LOGIN_ERROR'; error: string }
+  | { type: 'LOGOUT' };
 
 /** Public shape of the auth context consumed by any component via useAuth. */
 export type AuthContextValue = {
@@ -25,28 +29,23 @@ export type AuthContextValue = {
   token: string | null;
   error: string | null;
   isAuthenticated: boolean;
-  login: (name: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
+  signup: (email: string, password: string, name: string) => Promise<void>;
+  logout: () => void;
 };
 
-/** Props passed directly to the pure login screen view component. */
+/** Shared screen state exposed via AuthScreenContext and consumed by each child component. */
 export type AuthScreenViewProps = {
+  mode: AuthMode;
+  onToggleMode: () => void;
+  email: string;
+  onEmailChange: (value: string) => void;
   name: string;
   onNameChange: (value: string) => void;
+  password: string;
+  onPasswordChange: (value: string) => void;
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
   submittable: boolean;
   isLoading: boolean;
   error: string | null;
-};
-
-/** Props for the controlled name input. */
-export type AuthNameFieldProps = {
-  name: string;
-  onNameChange: (value: string) => void;
-  isLoading: boolean;
-};
-
-/** Props for the login submit button. */
-export type AuthSubmitButtonProps = {
-  submittable: boolean;
-  isLoading: boolean;
 };
