@@ -6,10 +6,13 @@ export const chatPageStyles = {
     display: 'flex',
     height: '100vh',
     fontFamily: 'sans-serif',
+    background: colors.background,
+    color: colors.text,
   },
   sidebar: {
     width: SIDEBAR_WIDTH,
     borderRight: `1px solid ${colors.divider}`,
+    background: colors.sidebarSurface,
     display: 'flex',
     flexDirection: 'column' as const,
   },

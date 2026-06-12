@@ -1,10 +1,8 @@
-import { useEffect, useReducer, useState } from 'react';
+import { useEffect, useReducer } from 'react';
 import { loginByName } from './model/Auth.api';
-import type { AuthContextValue, AuthScreenViewProps } from './Auth.types';
-import { useAuth } from './Auth.context';
+import type { AuthContextValue } from './Auth.types';
 import { authReducer, initialAuthState } from './model/Auth.reducer';
 import { readStoredAuth, writeStoredAuth } from './model/Auth.storage';
-import { canSubmit } from './model/Auth.utils';
 
 /** Drives the auth provider: wires useReducer, localStorage restore, and the login callback. */
 export function useAuthController(): AuthContextValue {
@@ -38,29 +36,5 @@ export function useAuthController(): AuthContextValue {
     error: state.error,
     isAuthenticated: state.status === 'authenticated' && state.user !== null,
     login,
-  };
-}
-
-/** Manages local name field state and produces view props for the login screen. */
-export function useAuthScreen(): AuthScreenViewProps {
-  const { status, error, login } = useAuth();
-  const [name, setName] = useState('');
-
-  const isLoading = status === 'loading';
-  const submittable = canSubmit(name, isLoading);
-
-  function onSubmit(event: React.FormEvent<HTMLFormElement>): void {
-    event.preventDefault();
-    if (!submittable) return;
-    void login(name.trim());
-  }
-
-  return {
-    name,
-    onNameChange: setName,
-    onSubmit,
-    submittable,
-    isLoading,
-    error,
   };
 }

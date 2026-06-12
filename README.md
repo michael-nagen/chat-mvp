@@ -1,58 +1,111 @@
 # Chat MVP
 
-A chat UI built with **React + Vite + TypeScript** against a typed, in-memory mocked API.
-Conversation list on the left, message thread + composer on the right, with optimistic sends and explicit loading / empty / error states.
+A full-stack chat app: a **React + Vite + TypeScript** frontend talking to an
+**Express + TypeScript** backend over a typed HTTP contract. Conversation list on the left,
+message thread + composer on the right, with optimistic sends and explicit
+loading / empty / error states. The backend is mock-auth + in-memory storage — no database —
+so the whole thing runs locally with two `npm run dev` commands.
+
+## Repository layout
+
+```
+.
+├─ vite-project/      # frontend — React 19 + Vite + TypeScript
+├─ backend/           # backend — Express 4 + TypeScript + Zod
+├─ API_CONTRACT.md    # the HTTP contract both sides implement
+└─ README.md          # you are here
+```
+
+| Doc | Covers |
+| --- | --- |
+| [API_CONTRACT.md](API_CONTRACT.md) | Domain types, every endpoint, request/response shapes |
+| [backend/README.md](backend/README.md) | Backend architecture, layering, error model |
 
 ## Stack
 
-- React 19 + Vite + TypeScript (strict mode)
-- Vitest + React Testing Library
-- In-memory mocked API (no backend)
+- **Frontend** — React 19, Vite, TypeScript (strict), Vitest + React Testing Library
+- **Backend** — Express 4, TypeScript (strict), Zod validation, Vitest + Supertest, in-memory store
 
 ## Getting started
 
+Run the two apps in separate terminals. Start the backend first so the frontend has something
+to talk to.
+
 ```bash
+# terminal 1 — backend on http://localhost:3000
+cd backend
+npm install
+npm run dev
+
+# terminal 2 — frontend on http://localhost:5173
 cd vite-project
 npm install
-npm run dev      # start the dev server
-npm test         # run the test suite
-npm run build    # type-check + production build
+npm run dev
 ```
+
+The frontend's API client points at `http://localhost:3000` and attaches the auth token as
+`Authorization: Bearer <token>`. Log in by name (`Alice` or `Bob`) — mock auth, no password.
+
+Common scripts (run inside each package):
+
+| Script | Frontend | Backend |
+| --- | --- | --- |
+| `npm run dev` | Vite dev server | `tsx watch` server |
+| `npm test` | Vitest | Vitest + Supertest |
+| `npm run build` | type-check + Vite build | compile to `dist/` |
+| `npm run lint` | ESLint | — |
 
 ---
 
-## Application flow
+## Architecture
 
-The app boots with `AuthProvider` wrapping everything. `App.tsx` reads auth state — if the user is not logged in it shows `AuthScreen`, otherwise it renders `ChatPage`.
-
-`ChatPage` sets up three context providers — `ChatSelectionContext` (which conversation is open), `ToastContext` (global error messages), and `MessageThreadContext` (the current message list) — then renders the layout. The four features inside the layout (`ConversationList`, `MessageList`, `MessageComposer`, `Toast`) each read their own context directly; no props are drilled between them.
-
-Clicking a conversation row writes the selected id into `ChatSelectionContext`. `MessageList` listens for that change and fetches the new messages. `MessageComposer` reads the same id to know where to send, appends an optimistic message immediately, and rolls back on failure with a toast.
+The frontend gathers user input and sends an authenticated HTTP request; the backend
+authenticates, validates, runs domain logic against the in-memory store, and returns JSON; the
+frontend updates the screen — optimistically for sends, with rollback on failure.
 
 ```mermaid
-flowchart TD
-    main["main.tsx"] --> authProvider["AuthProvider"]
-    authProvider --> app["App.tsx"]
-    app -- "not authenticated" --> authScreen["AuthScreen"]
-    app -- "authenticated" --> chatPage["ChatPage"]
+flowchart LR
+    subgraph FE["Frontend (React + Vite)"]
+        UI["features (UI + state)"] --> APIc["apiClient — attaches Bearer token"]
+    end
 
-    chatPage --> chatSelectionCtx["ChatSelectionContext"]
-    chatPage --> toastCtx["ToastContext"]
-    chatPage --> messageThreadCtx["MessageThreadContext"]
+    subgraph BE["Backend (Express)"]
+        Route["router → requireAuth → validate"] --> Logic["controller → orchestrator → service → repo"]
+        Logic --> Store[("in-memory store")]
+    end
 
-    chatSelectionCtx -- "selectedId" --> msgList["MessageList"]
-    chatSelectionCtx -- "selectedId" --> msgComposer["MessageComposer"]
-    chatSelectionCtx -- "selectConversation(id)" --> convRow["ConversationRow"]
+    APIc -->|"HTTP + Bearer token"| Route
+    Store -->|"JSON response"| APIc
+    APIc --> UI
 
-    messageThreadCtx -- "messages" --> msgList
-    messageThreadCtx -- "add / confirm / rollback" --> msgComposer
-
-    toastCtx -- "showToast" --> msgComposer
+    classDef infra fill:#e8eef7,stroke:#5b7;
+    class APIc,Store infra;
 ```
+
+### Frontend
+
+`AuthProvider` wraps the app. `App.tsx` reads auth state — not logged in → `AuthScreen`,
+otherwise `ChatPage`. `ChatPage` sets up three context providers — `ChatSelectionContext`
+(which conversation is open), `ToastContext` (global errors), and `MessageThreadContext`
+(the current message list) — then renders the layout. The features inside (`ConversationList`,
+`MessageList`, `MessageComposer`, `Toast`) each read their own context directly; no props are
+drilled between them. Every authenticated call flows through `shared/api/apiClient.ts`, which
+reads the token from `localStorage` and attaches it as a Bearer header.
+
+### Backend
+
+`server.ts` boots the listener; the app lives in `app.ts`. Every request passes through CORS,
+the request logger, and the JSON parser, then hits a feature router. Protected routes run
+`requireAuth` (resolves the mock token to a `userId` on `res.locals`) and `validate` (Zod).
+Inside a feature the chain is **controller → orchestrator → service → repo**, and only the repo
+touches the store. A domain reaches another domain through its orchestrator, never its repo or
+service directly. Anything thrown lands in one `errorHandler` that returns
+`{ error: { code, message } }`. See [backend/README.md](backend/README.md) for the full layering
+and error model.
 
 ---
 
-## Feature anatomy
+## Frontend feature anatomy
 
 Each feature is a self-contained folder. The public surface is `index.ts(x)`; everything
 else is internal. Within a feature the code is split into three layers — a thin **container**
@@ -81,19 +134,16 @@ features/messageComposer/
 
 Features that own shared state keep their context and provider at the feature root next to the
 container (e.g. `Auth.context.tsx` + `AuthProvider.tsx`, `ChatSelection.context.ts` +
-`ChatSelectionProvider.tsx`, `MessageThread.context.ts` + `MessageThreadProvider.tsx`). The
-provider stays thin by delegating to a composing **controller hook** that owns the reducer and
-exposes only named actions — never a raw setter — so the state has a single owner and every
-consumer is limited to the writes the controller defines (`useAuthController`,
-`useMessageThreadController`).
+`ChatSelectionProvider.tsx`). The provider stays thin by delegating to a composing **controller
+hook** that owns the reducer and exposes only named actions — never a raw setter — so the state
+has a single owner (`useAuthController`, `useMessageThreadController`). Each hook lives in its
+own `*.use.ts` file.
 
-Two features nest a smaller sub-feature that follows the exact same anatomy:
+Two features nest a smaller sub-feature with the same anatomy:
 `conversationList/conversation/` (a single conversation row) and `messageList/message/`
 (a single message bubble + skeleton).
 
----
-
-## File convention
+### File convention (frontend)
 
 | File              | Role                                                            |
 | ----------------- | --------------------------------------------------------------- |
@@ -111,14 +161,12 @@ Two features nest a smaller sub-feature that follows the exact same anatomy:
 | `*.utils.ts`      | Pure utility functions                                          |
 | `index.ts(x)`     | Wires everything together and exports the public API            |
 
----
-
-## Folder responsibilities
+### Folder responsibilities (frontend)
 
 | Folder                          | Responsibility                                                  |
 | ------------------------------- | --------------------------------------------------------------- |
 | `src/shared/entities`           | Shared domain types — `User`, `Conversation`, `Message`         |
-| `src/shared/api`                | Mocked API client, mock server, and seed data                   |
+| `src/shared/api`                | The HTTP API client (attaches the Bearer token)                 |
 | `src/shared/styles`             | Global style tokens (colors)                                    |
 | `src/features/auth`             | Login flow, auth context, reducer state machine, `localStorage` |
 | `src/features/chatPage`         | Layout shell + the three chat context providers                 |
@@ -127,3 +175,6 @@ Two features nest a smaller sub-feature that follows the exact same anatomy:
 | `src/features/messageList`      | Message list — fetches on selection change, auto-scroll         |
 | `src/features/messageComposer`  | Composer — optimistic send + rollback on failure                |
 | `src/features/toast`            | Global error toast                                              |
+
+For the backend's module anatomy, conventions, and error codes, see
+[backend/README.md](backend/README.md).
