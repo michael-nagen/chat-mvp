@@ -7,6 +7,8 @@ import {
   ConflictException,
   NotFoundException,
 } from '../../common/errors/app.exception';
+import { toConversationResponse } from './conversations.mapper';
+import { ConversationResponse } from './conversations.types';
 
 @Injectable()
 export class ConversationsService {
@@ -15,16 +17,17 @@ export class ConversationsService {
     private readonly users: UserService,
   ) {}
 
-  getForUser(userId: string): Conversation[] {
+  getForUser(userId: string): ConversationResponse[] {
     return this.repo
       .getForUser(userId)
       .sort(
         (a, b) =>
           new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-      );
+      )
+      .map(toConversationResponse);
   }
 
-  create({ email, userId }: { email: string; userId: string }): Conversation {
+  create({ email, userId }: { email: string; userId: string }): ConversationResponse {
     const recipient = this.users.findByEmail(email);
     if (!recipient) {
       throw new NotFoundException('User not found.');
@@ -39,7 +42,7 @@ export class ConversationsService {
       lastMessage: '',
       updatedAt: new Date().toISOString(),
     };
-    return this.repo.insert(conversation);
+    return toConversationResponse(this.repo.insert(conversation));
   }
 
   getById(id: string): Conversation | undefined {

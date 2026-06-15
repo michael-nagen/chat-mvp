@@ -7,6 +7,7 @@ export interface MessageSearchResultResponse extends MessageResponse {
 
 export interface MessageSearchResponse {
   results: MessageSearchResultResponse[];
+  nextCursor: string | null;
 }
 
 export interface RecentSearchesResponse {

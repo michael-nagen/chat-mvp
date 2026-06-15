@@ -3,7 +3,7 @@ import { ConversationsService } from './conversations.service';
 import { CreateConversationDto } from './dto/create-conversation.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser, AuthUser } from '../auth/current-user.decorator';
-import { Conversation } from '../../common/store/entities';
+import { ConversationResponse } from './conversations.types';
 
 @UseGuards(JwtAuthGuard)
 @Controller('conversations')
@@ -11,7 +11,7 @@ export class ConversationsController {
   constructor(private readonly conversationsService: ConversationsService) {}
 
   @Get()
-  list(@CurrentUser() user: AuthUser): { conversations: Conversation[] } {
+  list(@CurrentUser() user: AuthUser): { conversations: ConversationResponse[] } {
     return {
       conversations: this.conversationsService.getForUser(user.userId),
     };
@@ -21,7 +21,7 @@ export class ConversationsController {
   create(
     @CurrentUser() user: AuthUser,
     @Body() dto: CreateConversationDto,
-  ): Conversation {
+  ): ConversationResponse {
     return this.conversationsService.create({
       email: dto.email,
       userId: user.userId,

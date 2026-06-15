@@ -1,13 +1,9 @@
-import type { MessageSearchController } from '../MessageSearch.use';
+import { useMessageSearchContext } from '../MessageSearch.context';
 import { messageSearchStyles } from './MessageSearch.styles';
 
-type SearchInputProps = {
-  controller: MessageSearchController;
-};
-
 /** Controlled search field; submits the query on Enter, never per keystroke. */
-export function SearchInput({ controller }: SearchInputProps): React.JSX.Element {
-  const { state, setQuery, focus, submit } = controller;
+export function SearchInput(): React.JSX.Element {
+  const { state, setQuery, focus, submit } = useMessageSearchContext();
   return (
     <form
       onSubmit={(e) => {

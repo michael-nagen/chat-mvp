@@ -30,6 +30,37 @@ export class MessagesRepository {
     return ordered.slice(start, start + limit + 1);
   }
 
+  // `needle` is expected pre-lowercased. Newest first.
+  // Over-fetches one past `limit` so the caller can detect a further page.
+  matchContent({
+    conversationIds,
+    needle,
+    cursor,
+    limit,
+  }: {
+    conversationIds: Set<string>;
+    needle: string;
+    cursor: string | undefined;
+    limit: number;
+  }): Message[] {
+    const ordered = this.store.messages
+      .filter(
+        (m) =>
+          conversationIds.has(m.conversationId) &&
+          m.content.toLowerCase().includes(needle),
+      )
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      );
+
+    const start = cursor
+      ? ordered.findIndex((message) => message.id === cursor) + 1
+      : 0;
+
+    return ordered.slice(start, start + limit + 1);
+  }
+
   insert(message: Message): Message {
     this.store.messages.push(message);
     return message;

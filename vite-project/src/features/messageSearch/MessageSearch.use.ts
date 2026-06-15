@@ -4,7 +4,7 @@ import { useChatSelection } from '../chatPage/ChatSelection.context';
 import { getRecentSearches, searchMessages } from './MessageSearch.api';
 import { initialMessageSearchState, messageSearchReducer } from './MessageSearch.reducer';
 
-export type MessageSearchController = {
+export type MessageSearchContextValue = {
   state: MessageSearchState;
   focus: () => void;
   setQuery: (value: string) => void;
@@ -15,7 +15,7 @@ export type MessageSearchController = {
 };
 
 /** Owns search-mode state, recents loading, submit-driven searching, and result selection. */
-export function useMessageSearch(): MessageSearchController {
+export function useMessageSearch(): MessageSearchContextValue {
   const [state, dispatch] = useReducer(messageSearchReducer, initialMessageSearchState);
   const { selectConversation } = useChatSelection();
 

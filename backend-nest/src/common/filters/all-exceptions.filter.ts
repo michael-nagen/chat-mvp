@@ -8,6 +8,18 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 import { AppException } from '../errors/app.exception';
+import { ErrorCode, ErrorCodes } from '../errors/error-codes';
+
+// Maps framework-originated HttpExceptions (e.g. the JWT guard's 401) onto the
+// same stable codes their AppException siblings carry, so one status never
+// yields two different error envelopes.
+const STATUS_TO_CODE: Partial<Record<number, ErrorCode>> = {
+  [HttpStatus.BAD_REQUEST]: ErrorCodes.VALIDATION_ERROR,
+  [HttpStatus.UNAUTHORIZED]: ErrorCodes.UNAUTHORIZED,
+  [HttpStatus.FORBIDDEN]: ErrorCodes.FORBIDDEN,
+  [HttpStatus.NOT_FOUND]: ErrorCodes.NOT_FOUND,
+  [HttpStatus.CONFLICT]: ErrorCodes.CONFLICT,
+};
 
 // Funnels every error into the same `{ error: { code, message } }` shape the
 // Express backend returns.
@@ -34,7 +46,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
           : ((body as { message?: string | string[] }).message ?? exception.message);
       res.status(status).json({
         error: {
-          code: status === HttpStatus.BAD_REQUEST ? 'VALIDATION_ERROR' : 'ERROR',
+          code: STATUS_TO_CODE[status] ?? 'ERROR',
           message: Array.isArray(message) ? message.join(', ') : message,
         },
       });

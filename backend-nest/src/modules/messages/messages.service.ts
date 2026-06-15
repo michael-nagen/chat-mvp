@@ -62,6 +62,30 @@ export class MessagesService {
     return toMessageResponse(message);
   }
 
+  // Caller pre-restricts to its own conversations by passing their ids.
+  searchContent({
+    conversationIds,
+    query,
+    cursor,
+    limit,
+  }: {
+    conversationIds: Set<string>;
+    query: string;
+    cursor?: string;
+    limit: number;
+  }): MessagePageResponse {
+    const rows = this.repo.matchContent({
+      conversationIds,
+      needle: query.toLowerCase(),
+      cursor,
+      limit,
+    });
+    const hasMore = rows.length > limit;
+    const messages = hasMore ? rows.slice(0, limit) : rows;
+    const nextCursor = hasMore ? messages[messages.length - 1].id : null;
+    return toMessagePageResponse(messages, nextCursor);
+  }
+
   // Unknown conversation → 404; a real conversation the caller isn't part of → 403.
   private ensureAccess({
     conversationId,

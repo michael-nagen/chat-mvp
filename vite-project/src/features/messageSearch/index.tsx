@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import { useMessageSearch } from './MessageSearch.use';
+import { MessageSearchContext } from './MessageSearch.context';
 import { useClickOutside } from '../../shared/hooks/useClickOutside';
 import { MessageSearchLayout } from './components/MessageSearch.layout';
 
@@ -12,14 +13,14 @@ type MessageSearchProps = {
  * the conversation list (recents while typing, results after submit); clicking outside exits.
  */
 export function MessageSearch({ children }: MessageSearchProps): React.JSX.Element {
-  const controller = useMessageSearch();
+  const search = useMessageSearch();
   const containerRef = useRef<HTMLDivElement>(null);
 
-  useClickOutside({ ref: containerRef, onOutside: controller.exit, enabled: controller.state.isSearchMode });
+  useClickOutside({ ref: containerRef, onOutside: search.exit, enabled: search.state.isSearchMode });
 
   return (
-    <MessageSearchLayout controller={controller} containerRef={containerRef}>
-      {children}
-    </MessageSearchLayout>
+    <MessageSearchContext.Provider value={search}>
+      <MessageSearchLayout containerRef={containerRef}>{children}</MessageSearchLayout>
+    </MessageSearchContext.Provider>
   );
 }

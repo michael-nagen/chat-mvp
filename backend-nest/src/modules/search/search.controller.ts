@@ -18,6 +18,8 @@ export class SearchController {
     return this.searchService.searchMessages({
       userId: user.userId,
       query: query.q ?? '',
+      cursor: query.cursor,
+      limit: query.limit,
     });
   }
 
