@@ -1,68 +1,24 @@
-import { Injectable } from '@nestjs/common';
-import { InMemoryStoreService } from '../../common/store/in-memory-store.service';
 import { Message } from '../../common/store/entities';
+import { TxContext } from '../../common/storage/unit-of-work';
 
-@Injectable()
-export class MessagesRepository {
-  constructor(private readonly store: InMemoryStoreService) {}
-
-  // Over-fetches one past `limit` so the caller can detect a further page.
-  findPage({
-    conversationId,
-    cursor,
-    limit,
-  }: {
+// Storage-agnostic port. Each driver (Mongo, in-memory) provides an
+// implementation; services depend on this abstract class, never on a driver.
+// Implementations over-fetch limit+1 so the service can detect a further page.
+export abstract class MessagesRepository {
+  // Chronological history, oldest → newest; next page is strictly after the cursor.
+  abstract findPage(params: {
     conversationId: string;
     cursor: string | undefined;
     limit: number;
-  }): Message[] {
-    const ordered = this.store.messages
-      .filter((message) => message.conversationId === conversationId)
-      .sort(
-        (a, b) =>
-          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-      );
+  }): Promise<Message[]>;
 
-    const start = cursor
-      ? ordered.findIndex((message) => message.id === cursor) + 1
-      : 0;
-
-    return ordered.slice(start, start + limit + 1);
-  }
-
-  // `needle` is expected pre-lowercased. Newest first.
-  // Over-fetches one past `limit` so the caller can detect a further page.
-  matchContent({
-    conversationIds,
-    needle,
-    cursor,
-    limit,
-  }: {
+  // Content search across the given conversations, newest → oldest.
+  abstract matchContent(params: {
     conversationIds: Set<string>;
     needle: string;
     cursor: string | undefined;
     limit: number;
-  }): Message[] {
-    const ordered = this.store.messages
-      .filter(
-        (m) =>
-          conversationIds.has(m.conversationId) &&
-          m.content.toLowerCase().includes(needle),
-      )
-      .sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-      );
+  }): Promise<Message[]>;
 
-    const start = cursor
-      ? ordered.findIndex((message) => message.id === cursor) + 1
-      : 0;
-
-    return ordered.slice(start, start + limit + 1);
-  }
-
-  insert(message: Message): Message {
-    this.store.messages.push(message);
-    return message;
-  }
+  abstract insert(message: Message, tx?: TxContext): Promise<Message>;
 }

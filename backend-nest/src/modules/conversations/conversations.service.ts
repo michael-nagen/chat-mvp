@@ -1,63 +1,60 @@
 import { randomUUID } from 'crypto';
 import { Injectable } from '@nestjs/common';
 import { ConversationsRepository } from './conversations.repository';
-import { UserService } from '../user/user.service';
 import { Conversation } from '../../common/store/entities';
-import {
-  ConflictException,
-  NotFoundException,
-} from '../../common/errors/app.exception';
-import { toConversationResponse } from './conversations.mapper';
-import { ConversationResponse } from './conversations.types';
+import { TxContext } from '../../common/storage/unit-of-work';
 
 @Injectable()
 export class ConversationsService {
-  constructor(
-    private readonly repo: ConversationsRepository,
-    private readonly users: UserService,
-  ) {}
+  constructor(private readonly repo: ConversationsRepository) {}
 
-  getForUser(userId: string): ConversationResponse[] {
-    return this.repo
-      .getForUser(userId)
-      .sort(
-        (a, b) =>
-          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-      )
-      .map(toConversationResponse);
+  getForUser(userId: string): Promise<Conversation[]> {
+    return this.repo.getForUser(userId);
   }
 
-  create({ email, userId }: { email: string; userId: string }): ConversationResponse {
-    const recipient = this.users.findByEmail(email);
-    if (!recipient) {
-      throw new NotFoundException('User not found.');
-    }
-    if (this.repo.findBetween(userId, recipient.id)) {
-      throw new ConflictException('Conversation already exists.');
-    }
+  findBetween({
+    userId,
+    recipientId,
+  }: {
+    userId: string;
+    recipientId: string;
+  }): Promise<Conversation | undefined> {
+    return this.repo.findBetween(userId, recipientId);
+  }
+
+  create({
+    participantIds,
+    title,
+  }: {
+    participantIds: string[];
+    title: string;
+  }): Promise<Conversation> {
     const conversation: Conversation = {
       id: `c-${randomUUID()}`,
-      title: recipient.email,
-      participantIds: [userId, recipient.id],
+      title,
+      participantIds,
       lastMessage: '',
       updatedAt: new Date().toISOString(),
     };
-    return toConversationResponse(this.repo.insert(conversation));
+    return this.repo.insert(conversation);
   }
 
-  getById(id: string): Conversation | undefined {
+  getById(id: string): Promise<Conversation | undefined> {
     return this.repo.findById(id);
   }
 
-  updateLastMessage({
-    id,
-    lastMessage,
-    updatedAt,
-  }: {
-    id: string;
-    lastMessage: string;
-    updatedAt: string;
-  }): Conversation | undefined {
-    return this.repo.updateLastMessage({ id, lastMessage, updatedAt });
+  updateLastMessage(
+    {
+      id,
+      lastMessage,
+      updatedAt,
+    }: {
+      id: string;
+      lastMessage: string;
+      updatedAt: string;
+    },
+    tx?: TxContext,
+  ): Promise<Conversation | undefined> {
+    return this.repo.updateLastMessage({ id, lastMessage, updatedAt }, tx);
   }
 }

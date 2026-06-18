@@ -1,49 +1,22 @@
-import { Injectable } from '@nestjs/common';
-import { InMemoryStoreService } from '../../common/store/in-memory-store.service';
 import { Conversation } from '../../common/store/entities';
+import { TxContext } from '../../common/storage/unit-of-work';
 
-@Injectable()
-export class ConversationsRepository {
-  constructor(private readonly store: InMemoryStoreService) {}
-
-  getForUser(userId: string): Conversation[] {
-    return this.store.conversations.filter((c) =>
-      c.participantIds.includes(userId),
-    );
-  }
-
-  findBetween(userId: string, recipientId: string): Conversation | undefined {
-    return this.store.conversations.find(
-      (c) =>
-        c.participantIds.includes(userId) &&
-        c.participantIds.includes(recipientId),
-    );
-  }
-
-  insert(conversation: Conversation): Conversation {
-    this.store.conversations.push(conversation);
-    return conversation;
-  }
-
-  findById(id: string): Conversation | undefined {
-    return this.store.conversations.find((c) => c.id === id);
-  }
-
-  updateLastMessage({
-    id,
-    lastMessage,
-    updatedAt,
-  }: {
-    id: string;
-    lastMessage: string;
-    updatedAt: string;
-  }): Conversation | undefined {
-    const conversation = this.findById(id);
-    if (!conversation) {
-      return undefined;
-    }
-    conversation.lastMessage = lastMessage;
-    conversation.updatedAt = updatedAt;
-    return conversation;
-  }
+// Storage-agnostic port. Drivers implement it; the service depends on this
+// abstract class, never on a concrete driver.
+export abstract class ConversationsRepository {
+  abstract getForUser(userId: string): Promise<Conversation[]>;
+  abstract findBetween(
+    userId: string,
+    recipientId: string,
+  ): Promise<Conversation | undefined>;
+  abstract insert(conversation: Conversation): Promise<Conversation>;
+  abstract findById(id: string): Promise<Conversation | undefined>;
+  abstract updateLastMessage(
+    params: {
+      id: string;
+      lastMessage: string;
+      updatedAt: string;
+    },
+    tx?: TxContext,
+  ): Promise<Conversation | undefined>;
 }
