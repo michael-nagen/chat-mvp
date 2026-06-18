@@ -30,10 +30,12 @@ describe('Messages (e2e)', () => {
 
       expect(first.status).toBe(200);
       expect(first.body.messages.map((m: { id: string }) => m.id)).toEqual(['m1', 'm2']);
-      expect(first.body.nextCursor).toBe('m2');
+      // The cursor is an opaque keyset token, not a bare message id.
+      expect(typeof first.body.nextCursor).toBe('string');
 
       const second = await request(app.getHttpServer())
-        .get('/conversations/c1/messages?limit=2&cursor=m2')
+        .get('/conversations/c1/messages?limit=2')
+        .query({ cursor: first.body.nextCursor })
         .set('Authorization', auth());
 
       expect(second.body.messages.map((m: { id: string }) => m.id)).toEqual(['m3']);

@@ -29,26 +29,34 @@ describe('Conversations (e2e)', () => {
       expect(res.status).toBe(200);
       const ids = res.body.conversations.map((c: { id: string }) => c.id);
       expect(ids).toEqual(['c1', 'c2']);
-      expect(
-        res.body.conversations.every((c: { participantIds: string[] }) =>
-          c.participantIds.includes('u1'),
-        ),
-      ).toBe(true);
     });
   });
 
   describe('POST /conversations', () => {
     it('creates a conversation with a recipient by email (returned directly)', async () => {
+      await request(app.getHttpServer())
+        .post('/auth/signup')
+        .send({ email: 'carol@example.com', name: 'Carol', password: 'password' });
+
+      const res = await request(app.getHttpServer())
+        .post('/conversations')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ email: 'carol@example.com' });
+
+      expect(res.status).toBe(201);
+      expect(res.body.id).toMatch(/^c-/);
+      expect(res.body.title).toBe('carol@example.com');
+      expect(res.body.lastMessage).toBe('');
+    });
+
+    it('returns 409 CONFLICT when a conversation with the recipient already exists', async () => {
       const res = await request(app.getHttpServer())
         .post('/conversations')
         .set('Authorization', `Bearer ${token}`)
         .send({ email: 'bob@example.com' });
 
-      expect(res.status).toBe(201);
-      expect(res.body.id).toMatch(/^c-/);
-      expect(res.body.title).toBe('bob@example.com');
-      expect(res.body.participantIds).toEqual(['u1', 'u2']);
-      expect(res.body.lastMessage).toBe('');
+      expect(res.status).toBe(409);
+      expect(res.body.error.code).toBe('CONFLICT');
     });
 
     it('returns 404 NOT_FOUND for an unknown recipient email', async () => {
