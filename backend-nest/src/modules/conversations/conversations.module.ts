@@ -5,9 +5,9 @@ import {
 } from '../../common/storage/storage.config';
 import { ConversationsService } from './conversations.service';
 import { ConversationsRepository } from './conversations.repository';
-import { MongoConversationsRepository } from './conversations.repository.mongo';
-import { InMemoryConversationsRepository } from './conversations.repository.memory';
-import { ConversationDoc, ConversationSchema } from './conversations.schema';
+import { MongoConversationsRepository } from './storage/mongo-conversations.repository';
+import { InMemoryConversationsRepository } from './storage/in-memory-conversations.repository';
+import { ConversationDoc, ConversationSchema } from './storage/conversations.schema';
 
 // ── Single change point: this entity's storage driver. ──────────────────────
 export const CONVERSATIONS_DRIVER: StorageDriver = 'mongo';

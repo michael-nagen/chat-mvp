@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { InMemoryStoreService } from '../../common/store/in-memory-store.service';
-import { User } from '../../common/store/entities';
-import { UserRepository } from './user.repository';
+import { InMemoryStoreService } from '../../memory/in-memory-store.service';
+import { User } from '../../memory/entities';
+import { UserRepository } from '../user.repository';
 
 // In-memory driver for users, backed by the shared seed store.
 @Injectable()

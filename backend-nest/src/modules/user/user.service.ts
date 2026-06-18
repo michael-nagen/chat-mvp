@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto';
 import { Injectable } from '@nestjs/common';
 import { UserRepository } from './user.repository';
-import { User } from '../../common/store/entities';
+import { User } from '../memory/entities';
 
 @Injectable()
 export class UserService {

@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { User } from '../../common/store/entities';
-import { UserRepository } from './user.repository';
+import { User } from '../../memory/entities';
+import { UserRepository } from '../user.repository';
 import { UserDoc, UserDocument } from './user.schema';
 
 // Mongo driver for users. Maps documents to the plain domain entity.

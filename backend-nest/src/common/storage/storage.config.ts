@@ -2,8 +2,8 @@ import { DynamicModule, Provider, Type } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import type { ModelDefinition } from '@nestjs/mongoose';
 import { UnitOfWork } from './unit-of-work';
-import { MongoUnitOfWork } from './unit-of-work.mongo';
-import { InMemoryUnitOfWork } from './unit-of-work.memory';
+import { MongoUnitOfWork } from '../../modules/mongo/unit-of-work.mongo';
+import { InMemoryUnitOfWork } from '../../modules/memory/unit-of-work.memory';
 
 // Each entity picks its own driver (see its module). STORAGE_DRIVER (env), when
 // set, overrides every entity at once — used by tests to force in-memory.

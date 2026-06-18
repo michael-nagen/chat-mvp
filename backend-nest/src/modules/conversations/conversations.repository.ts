@@ -1,4 +1,4 @@
-import { Conversation } from '../../common/store/entities';
+import { Conversation } from '../memory/entities';
 import { TxContext } from '../../common/storage/unit-of-work';
 
 // Storage-agnostic port. Drivers implement it; the service depends on this

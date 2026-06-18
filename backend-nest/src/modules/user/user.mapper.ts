@@ -1,4 +1,4 @@
-import { User } from '../../common/store/entities';
+import { User } from '../memory/entities';
 import { UserResponse } from './user.types';
 
 // password is internal and never exposed on the wire.

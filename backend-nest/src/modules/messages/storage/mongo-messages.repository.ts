@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ClientSession, FilterQuery, Model } from 'mongoose';
-import { Message } from '../../common/store/entities';
-import { TxContext } from '../../common/storage/unit-of-work';
-import { MessagesRepository } from './messages.repository';
+import { Message } from '../../memory/entities';
+import { TxContext } from '../../../common/storage/unit-of-work';
+import { MessagesRepository } from '../messages.repository';
 import { MessageDoc, MessageDocument } from './messages.schema';
-import { decodeCursor } from './messages.cursor';
+import { decodeCursor } from '../messages.cursor';
 
 // Mongo driver. Keyset pagination on (createdAt, _id), index-backed by
 // (conversationId, createdAt, _id).

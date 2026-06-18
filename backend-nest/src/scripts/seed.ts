@@ -2,13 +2,13 @@ import 'reflect-metadata';
 import 'dotenv/config';
 import * as bcrypt from 'bcrypt';
 import mongoose from 'mongoose';
-import { SALT_ROUNDS } from './modules/auth/auth.constants';
-import { UserDoc, UserSchema } from './modules/user/user.schema';
+import { SALT_ROUNDS } from '../modules/auth/auth.constants';
+import { UserDoc, UserSchema } from '../modules/user/storage/user.schema';
 import {
   ConversationDoc,
   ConversationSchema,
-} from './modules/conversations/conversations.schema';
-import { MessageDoc, MessageSchema } from './modules/messages/messages.schema';
+} from '../modules/conversations/storage/conversations.schema';
+import { MessageDoc, MessageSchema } from '../modules/messages/storage/messages.schema';
 
 // Standalone, idempotent seed. Upserts fixtures by stable _id, so re-running
 // never duplicates and never wipes real data. Not run on boot (data must

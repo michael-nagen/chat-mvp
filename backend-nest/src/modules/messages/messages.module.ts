@@ -5,9 +5,9 @@ import {
 } from '../../common/storage/storage.config';
 import { MessagesService } from './messages.service';
 import { MessagesRepository } from './messages.repository';
-import { MongoMessagesRepository } from './messages.repository.mongo';
-import { InMemoryMessagesRepository } from './messages.repository.memory';
-import { MessageDoc, MessageSchema } from './messages.schema';
+import { MongoMessagesRepository } from './storage/mongo-messages.repository';
+import { InMemoryMessagesRepository } from './storage/in-memory-messages.repository';
+import { MessageDoc, MessageSchema } from './storage/messages.schema';
 
 // ── Single change point: this entity's storage driver. ──────────────────────
 export const MESSAGES_DRIVER: StorageDriver = 'mongo';

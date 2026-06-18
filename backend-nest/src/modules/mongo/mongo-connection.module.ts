@@ -1,7 +1,7 @@
 import { DynamicModule, Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { StorageDriver, needsMongoConnection } from './storage.config';
+import { StorageDriver, needsMongoConnection } from '../../common/storage/storage.config';
 
 // Opens the MongoDB connection only when at least one entity declares the mongo
 // driver. It does not decide any entity's driver — it reacts to the per-entity

@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ClientSession, Model } from 'mongoose';
-import { Conversation } from '../../common/store/entities';
-import { TxContext } from '../../common/storage/unit-of-work';
-import { ConversationsRepository } from './conversations.repository';
+import { Conversation } from '../../memory/entities';
+import { TxContext } from '../../../common/storage/unit-of-work';
+import { ConversationsRepository } from '../conversations.repository';
 import { ConversationDoc, ConversationDocument } from './conversations.schema';
 
 // Mongo driver for conversations. `lastMessageAt` (Date) surfaces as the

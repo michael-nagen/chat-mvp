@@ -5,9 +5,9 @@ import {
 } from '../../common/storage/storage.config';
 import { UserService } from './user.service';
 import { UserRepository } from './user.repository';
-import { MongoUserRepository } from './user.repository.mongo';
-import { InMemoryUserRepository } from './user.repository.memory';
-import { UserDoc, UserSchema } from './user.schema';
+import { MongoUserRepository } from './storage/mongo-user.repository';
+import { InMemoryUserRepository } from './storage/in-memory-user.repository';
+import { UserDoc, UserSchema } from './storage/user.schema';
 
 // ── Single change point: this entity's storage driver. ──────────────────────
 export const USER_DRIVER: StorageDriver = 'mongo';

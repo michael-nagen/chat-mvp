@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto';
 import { Injectable } from '@nestjs/common';
 import { ConversationsRepository } from './conversations.repository';
-import { Conversation } from '../../common/store/entities';
+import { Conversation } from '../memory/entities';
 import { TxContext } from '../../common/storage/unit-of-work';
 
 @Injectable()

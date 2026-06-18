@@ -50,7 +50,7 @@ describe('Mongo driver (e2e)', () => {
     process.env.STORAGE_DRIVER = 'mongo';
     process.env.MONGO_URI = replset.getUri();
     process.env.JWT_SECRET = 'test-secret';
-    const { seed } = await import('../src/seed');
+    const { seed } = await import('../src/scripts/seed');
     await seed();
     app = await buildApp();
   });

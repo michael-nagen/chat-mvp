@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { InMemoryStoreService } from '../../common/store/in-memory-store.service';
-import { Conversation } from '../../common/store/entities';
-import { ConversationsRepository } from './conversations.repository';
+import { InMemoryStoreService } from '../../memory/in-memory-store.service';
+import { Conversation } from '../../memory/entities';
+import { ConversationsRepository } from '../conversations.repository';
 
 // In-memory driver for conversations, backed by the shared seed store.
 @Injectable()

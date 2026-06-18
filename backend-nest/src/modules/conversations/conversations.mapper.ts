@@ -1,4 +1,4 @@
-import { Conversation } from '../../common/store/entities';
+import { Conversation } from '../memory/entities';
 import { ConversationResponse } from './conversations.types';
 
 // participantIds is internal and never exposed on the wire.

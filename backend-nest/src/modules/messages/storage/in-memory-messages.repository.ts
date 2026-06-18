@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { InMemoryStoreService } from '../../common/store/in-memory-store.service';
-import { Message } from '../../common/store/entities';
-import { MessagesRepository } from './messages.repository';
-import { decodeCursor } from './messages.cursor';
+import { InMemoryStoreService } from '../../memory/in-memory-store.service';
+import { Message } from '../../memory/entities';
+import { MessagesRepository } from '../messages.repository';
+import { decodeCursor } from '../messages.cursor';
 
 // In-memory driver. Mirrors the Mongo driver's keyset semantics so behavior is
 // identical regardless of STORAGE_DRIVER.

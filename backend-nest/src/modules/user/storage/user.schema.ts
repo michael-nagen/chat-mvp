@@ -5,7 +5,7 @@ import { HydratedDocument } from 'mongoose';
 export const USERS_COLLECTION = 'users';
 
 // Persistence schema for the `users` collection. Kept separate from the plain
-// domain entity (common/store/entities.ts): only repositories touch this type.
+// domain entity (modules/memory/entities.ts): only repositories touch this type.
 @Schema({ collection: USERS_COLLECTION, versionKey: false })
 export class UserDoc {
   // Custom string id (e.g. `u-<uuid>`), not a Mongo ObjectId.

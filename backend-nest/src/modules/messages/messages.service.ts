@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto';
 import { Injectable } from '@nestjs/common';
 import { MessagesRepository } from './messages.repository';
-import { Message } from '../../common/store/entities';
+import { Message } from '../memory/entities';
 import { MessagePage } from './messages.types';
 import { encodeCursor } from './messages.cursor';
 import { TxContext } from '../../common/storage/unit-of-work';

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
-import { TxContext, UnitOfWork } from './unit-of-work';
+import { TxContext, UnitOfWork } from '../../common/storage/unit-of-work';
 
 // Runs the work inside a real MongoDB transaction. withTransaction auto-retries
 // transient errors and rolls back on throw. The session is the opaque TxContext

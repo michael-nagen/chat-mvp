@@ -1,4 +1,4 @@
-import { Message } from '../../common/store/entities';
+import { Message } from '../memory/entities';
 import { toMessagePageResponse, toMessageResponse } from './messages.mapper';
 
 const message: Message = {

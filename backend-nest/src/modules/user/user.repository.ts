@@ -1,4 +1,4 @@
-import { User } from '../../common/store/entities';
+import { User } from '../memory/entities';
 
 // Storage-agnostic port. Drivers implement it; the service depends on this
 // abstract class, never on a concrete driver.

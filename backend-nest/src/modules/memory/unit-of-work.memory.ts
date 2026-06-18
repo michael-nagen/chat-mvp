@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { TxContext, UnitOfWork } from './unit-of-work';
+import { TxContext, UnitOfWork } from '../../common/storage/unit-of-work';
 
 // No real transactions in memory: just run the work with no tx handle.
 @Injectable()

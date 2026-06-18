@@ -1,4 +1,4 @@
-import { Message } from '../../common/store/entities';
+import { Message } from '../memory/entities';
 import { TxContext } from '../../common/storage/unit-of-work';
 
 // Storage-agnostic port. Each driver (Mongo, in-memory) provides an
