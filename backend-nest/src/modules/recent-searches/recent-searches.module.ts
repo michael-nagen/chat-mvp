@@ -1,9 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ConversationsModule } from '../conversations/conversations.module';
-import { MessagesModule } from '../messages/messages.module';
-import { SearchController } from './search.controller';
-import { SearchService } from './search.service';
+import { RecentSearchesService } from './recent-searches.service';
 import {
   InMemoryRecentSearchesStore,
   RECENT_SEARCHES_STORE,
@@ -12,10 +9,8 @@ import {
 import { RedisRecentSearchesStore } from './recent-searches.redis';
 
 @Module({
-  imports: [ConversationsModule, MessagesModule],
-  controllers: [SearchController],
   providers: [
-    SearchService,
+    RecentSearchesService,
     {
       provide: RECENT_SEARCHES_STORE,
       inject: [ConfigService],
@@ -38,5 +33,6 @@ import { RedisRecentSearchesStore } from './recent-searches.redis';
       },
     },
   ],
+  exports: [RecentSearchesService],
 })
-export class SearchModule {}
+export class RecentSearchesModule {}

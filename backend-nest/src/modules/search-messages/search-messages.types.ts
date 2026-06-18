@@ -9,7 +9,3 @@ export interface MessageSearchResponse {
   results: MessageSearchResultResponse[];
   nextCursor: string | null;
 }
-
-export interface RecentSearchesResponse {
-  searches: string[];
-}
