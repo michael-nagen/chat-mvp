@@ -29,8 +29,16 @@ export const chatPageStyles = {
     justifyContent: 'space-between',
     gap: '8px',
   },
-  sidebarEmail: {
+  profileLink: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    minWidth: 0,
     fontWeight: 600,
+    color: colors.text,
+    textDecoration: 'none',
+  },
+  profileLinkText: {
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap' as const,
@@ -89,5 +97,19 @@ export const chatPageStyles = {
     flex: 1,
     display: 'flex',
     flexDirection: 'column' as const,
+  },
+  header: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    padding: '12px 16px',
+    borderBottom: `1px solid ${colors.divider}`,
+    background: colors.surface,
+  },
+  headerName: {
+    fontWeight: 600,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap' as const,
   },
 };

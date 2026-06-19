@@ -16,11 +16,22 @@ export class UserDoc {
   email!: string;
 
   @Prop({ type: String, required: true })
-  name!: string;
+  firstName!: string;
+
+  @Prop({ type: String, required: true })
+  lastName!: string;
 
   // Internal only — never mapped into any DTO.
   @Prop({ type: String, required: true })
   passwordHash!: string;
+
+  // Public URL of the current avatar; absent when the user has none.
+  @Prop({ type: String, required: false, default: null })
+  avatarUrl?: string | null;
+
+  // Internal S3 object key for the current avatar — never mapped into any DTO.
+  @Prop({ type: String, required: false, default: null })
+  avatarKey?: string | null;
 
   @Prop({ type: Date, required: true })
   createdAt!: Date;

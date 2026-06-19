@@ -33,9 +33,19 @@ export async function seed(): Promise<void> {
   const at = (minutes: number): Date => new Date(epoch + minutes * 60_000);
 
   const users = [
-    { _id: 'u1', email: 'alice@example.com', name: 'Alice', passwordHash, createdAt: at(0) },
-    { _id: 'u2', email: 'bob@example.com', name: 'Bob', passwordHash, createdAt: at(0) },
+    { _id: 'u1', email: 'alice@example.com', firstName: 'Alice', lastName: 'Anderson', passwordHash, createdAt: at(0) },
+    { _id: 'u2', email: 'bob@example.com', firstName: 'Bob', lastName: 'Brown', passwordHash, createdAt: at(0) },
+    { _id: 'u3', email: 'carol@example.com', firstName: 'Carol', lastName: 'Carter', passwordHash, createdAt: at(0) },
+    { _id: 'u4', email: 'dave@example.com', firstName: 'Dave', lastName: 'Davis', passwordHash, createdAt: at(0) },
+    { _id: 'u5', email: 'eve@example.com', firstName: 'Eve', lastName: 'Evans', passwordHash, createdAt: at(0) },
+    { _id: 'u6', email: 'frank@example.com', firstName: 'Frank', lastName: 'Foster', passwordHash, createdAt: at(0) },
+    { _id: 'u7', email: 'grace@example.com', firstName: 'Grace', lastName: 'Green', passwordHash, createdAt: at(0) },
+    { _id: 'u8', email: 'heidi@example.com', firstName: 'Heidi', lastName: 'Hughes', passwordHash, createdAt: at(0) },
   ];
+
+  // Everyone after Alice & Bob gets a starter DM with Alice so they are usable
+  // immediately (log in as that user, or as Alice to see them all).
+  const extraUserIds = ['u3', 'u4', 'u5', 'u6', 'u7', 'u8'];
 
   const messages = [
     { _id: 'm1', conversationId: 'c1', senderId: 'u1', content: 'Hey Bob!', createdAt: at(0) },
@@ -60,6 +70,29 @@ export async function seed(): Promise<void> {
     { _id: 'c2', participantIds: ['u1', 'u2'], title: 'Project chat', lastMessage: 'Sounds good.', lastMessageAt: new Date('2026-06-03T17:45:00.000Z'), createdAt: new Date('2026-06-03T17:00:00.000Z') },
     { _id: BIG_THREAD_ID, participantIds: ['u1', 'u2'], title: 'Big thread', lastMessage: lastBig.content, lastMessageAt: lastBig.createdAt, createdAt: at(100) },
   ];
+
+  // A DM between Alice (u1) and each extra user, with one opening message.
+  extraUserIds.forEach((uid, i) => {
+    const profile = users.find((u) => u._id === uid)!;
+    const conversationId = `c-${uid}`;
+    const content = `Hi ${profile.firstName}!`;
+    const when = at(300 + i);
+    conversations.push({
+      _id: conversationId,
+      participantIds: ['u1', uid],
+      title: `Alice & ${profile.firstName}`,
+      lastMessage: content,
+      lastMessageAt: when,
+      createdAt: when,
+    });
+    messages.push({
+      _id: `m-${conversationId}`,
+      conversationId,
+      senderId: 'u1',
+      content,
+      createdAt: when,
+    });
+  });
 
   await Promise.all(
     users.map((u) => User.updateOne({ _id: u._id }, { $set: u }, { upsert: true })),

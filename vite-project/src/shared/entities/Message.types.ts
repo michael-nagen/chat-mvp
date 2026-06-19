@@ -5,6 +5,8 @@ export type Message = {
   conversationId: string;
   content: string;
   sender: SenderRole;
+  // Raw author id, kept for resolving the sender's avatar/name from participants.
+  senderId: string;
   timestamp: string;
 };
 

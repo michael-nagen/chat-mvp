@@ -1,2 +1,2 @@
-export { MessageView } from './Message.view';
+export { Message } from './Message';
 export { MessageSkeletonList } from './MessageSkeletonList';

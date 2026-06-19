@@ -19,11 +19,17 @@ export async function login({
 export async function signup({
   email,
   password,
-  name,
+  firstName,
+  lastName,
 }: {
   email: string;
   password: string;
-  name: string;
+  firstName: string;
+  lastName: string;
 }): Promise<AuthResponse> {
-  return post<AuthResponse>('/auth/signup', { email, password, name }, { auth: false });
+  return post<AuthResponse>(
+    '/auth/signup',
+    { email, password, firstName, lastName },
+    { auth: false },
+  );
 }

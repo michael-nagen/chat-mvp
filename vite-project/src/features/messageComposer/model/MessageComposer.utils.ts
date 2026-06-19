@@ -22,7 +22,7 @@ export async function sendOptimisticMessage({
   userId: string | null;
   thread: ThreadActions;
 }): Promise<SendResult> {
-  const optimistic = createOptimisticMessage({ conversationId, content });
+  const optimistic = createOptimisticMessage({ conversationId, content, senderId: userId });
   thread.addOptimisticMessage(optimistic);
   try {
     const res = await sendUserMessage({ conversationId, content });
@@ -43,14 +43,17 @@ export function canSend({ value, isSending }: { value: string; isSending: boolea
 export function createOptimisticMessage({
   conversationId,
   content,
+  senderId,
 }: {
   conversationId: string;
   content: string;
+  senderId: string | null;
 }): Message {
   return {
     id: `temp-${Date.now()}`,
     conversationId,
     sender: 'user',
+    senderId: senderId ?? '',
     content,
     timestamp: new Date().toISOString(),
   };

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from '../../memory/entities';
+import { UserUpdate } from '../user.types';
 import { UserRepository } from '../user.repository';
 import { UserDoc, UserDocument } from './user.schema';
 
@@ -18,6 +19,16 @@ export class MongoUserRepository extends UserRepository {
     return this.toEntity(await this.model.findById(id).lean().exec());
   }
 
+  async findByIds(ids: string[]): Promise<User[]> {
+    const docs = await this.model
+      .find({ _id: { $in: ids } })
+      .lean()
+      .exec();
+    return docs
+      .map((doc) => this.toEntity(doc))
+      .filter((user): user is User => user !== undefined);
+  }
+
   async findByEmail(email: string): Promise<User | undefined> {
     return this.toEntity(await this.model.findOne({ email }).lean().exec());
   }
@@ -26,11 +37,23 @@ export class MongoUserRepository extends UserRepository {
     await this.model.create({
       _id: user.id,
       email: user.email,
-      name: user.name,
+      firstName: user.firstName,
+      lastName: user.lastName,
       passwordHash: user.passwordHash,
+      avatarUrl: user.avatarUrl ?? null,
+      avatarKey: user.avatarKey ?? null,
       createdAt: new Date(),
     });
     return user;
+  }
+
+  async update(id: string, patch: UserUpdate): Promise<User | undefined> {
+    return this.toEntity(
+      await this.model
+        .findByIdAndUpdate(id, { $set: patch }, { new: true })
+        .lean()
+        .exec(),
+    );
   }
 
   private toEntity(doc: UserDoc | null): User | undefined {
@@ -40,8 +63,11 @@ export class MongoUserRepository extends UserRepository {
     return {
       id: doc._id,
       email: doc.email,
-      name: doc.name,
+      firstName: doc.firstName,
+      lastName: doc.lastName,
       passwordHash: doc.passwordHash,
+      avatarUrl: doc.avatarUrl ?? null,
+      avatarKey: doc.avatarKey ?? null,
     };
   }
 }

@@ -4,3 +4,6 @@
 // dynamically imports the app).
 process.env.STORAGE_DRIVER = process.env.STORAGE_DRIVER ?? 'memory';
 process.env.JWT_SECRET = process.env.JWT_SECRET ?? 'test-secret';
+// Avatar storage uses the in-memory fake in tests so no suite touches AWS S3
+// (this includes the mongo e2e, which only overrides STORAGE_DRIVER).
+process.env.AVATAR_STORAGE = process.env.AVATAR_STORAGE ?? 'fake';

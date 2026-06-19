@@ -2,6 +2,7 @@ import { useEffect, useReducer } from 'react';
 import type { ConversationListViewProps } from './ConversationList.types';
 import { useAuth } from '../auth';
 import { useChatSelection } from '../chatPage/ChatSelection.context';
+import { useChatParticipants } from '../chatPage/ChatParticipants.context';
 import { getConversations } from './ConversationList.api';
 import { conversationListReducer, initialConversationListState } from './ConversationList.reducer';
 
@@ -10,6 +11,7 @@ export function useConversationList(): ConversationListViewProps {
   const { user } = useAuth();
   const userId = user?.id;
   const { refreshToken } = useChatSelection();
+  const { setParticipants } = useChatParticipants();
   const [state, dispatch] = useReducer(conversationListReducer, initialConversationListState);
 
   useEffect(() => {
@@ -20,6 +22,8 @@ export function useConversationList(): ConversationListViewProps {
       .then((res) => {
         if (cancelled) return;
         dispatch({ type: 'LOAD_SUCCESS', conversations: res.conversations });
+        // Feed the sender map so message bubbles can render avatars by senderId.
+        setParticipants(res.conversations.flatMap((c) => c.participants));
       })
       .catch((err) => {
         if (cancelled) return;
@@ -29,7 +33,7 @@ export function useConversationList(): ConversationListViewProps {
         });
       });
     return () => { cancelled = true; };
-  }, [userId, refreshToken]);
+  }, [userId, refreshToken, setParticipants]);
 
   return {
     conversations: state.conversations,

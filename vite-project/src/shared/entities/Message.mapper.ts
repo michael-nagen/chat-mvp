@@ -12,6 +12,7 @@ export function toMessage({
     conversationId: raw.conversationId,
     content: raw.content,
     sender: raw.senderId === currentUserId ? 'user' : 'assistant',
+    senderId: raw.senderId,
     timestamp: raw.timestamp,
   };
 }

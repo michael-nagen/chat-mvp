@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConversationsService } from '../conversations/conversations.service';
 import { UserService } from '../user/user.service';
 import { toConversationResponse } from '../conversations/conversations.mapper';
+import { toUserSummary } from '../user/user.mapper';
 import {
   ConflictException,
   NotFoundException,
@@ -38,6 +39,9 @@ export class CreateConversationOrchestrator {
       participantIds: [userId, recipient.id],
       title: recipient.email,
     });
-    return toConversationResponse(conversation);
+    const participants = (
+      await this.users.findByIds(conversation.participantIds)
+    ).map(toUserSummary);
+    return toConversationResponse(conversation, participants);
   }
 }

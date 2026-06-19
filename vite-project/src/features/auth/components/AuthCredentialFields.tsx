@@ -1,42 +1,22 @@
-import { authStyles } from './Auth.styles';
 import { useAuthScreenContext } from '../AuthScreen.context';
+import { EmailField } from './children/EmailField';
+import { FirstNameField } from './children/FirstNameField';
+import { LastNameField } from './children/LastNameField';
+import { PasswordField } from './children/PasswordField';
 
 /** Controlled email + password inputs shared by the login and signup modes. */
 export function AuthCredentialFields(): React.JSX.Element {
-  const { mode, email, onEmailChange, name, onNameChange, password, onPasswordChange, isLoading } =
-    useAuthScreenContext();
+  const { mode } = useAuthScreenContext();
   return (
     <>
-      <input
-        type="email"
-        value={email}
-        onChange={(e) => onEmailChange(e.target.value)}
-        placeholder="Email"
-        autoComplete="email"
-        autoFocus
-        disabled={isLoading}
-        style={authStyles.input}
-      />
+      <EmailField />
       {mode === 'signup' && (
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => onNameChange(e.target.value)}
-          placeholder="Name"
-          autoComplete="name"
-          disabled={isLoading}
-          style={authStyles.input}
-        />
+        <>
+          <FirstNameField />
+          <LastNameField />
+        </>
       )}
-      <input
-        type="password"
-        value={password}
-        onChange={(e) => onPasswordChange(e.target.value)}
-        placeholder="Password"
-        autoComplete="current-password"
-        disabled={isLoading}
-        style={authStyles.input}
-      />
+      <PasswordField />
     </>
   );
 }

@@ -29,6 +29,14 @@ describe('Conversations (e2e)', () => {
       expect(res.status).toBe(200);
       const ids = res.body.conversations.map((c: { id: string }) => c.id);
       expect(ids).toEqual(['c1', 'c2']);
+
+      const [c1] = res.body.conversations;
+      expect(c1.participants).toEqual(
+        expect.arrayContaining([
+          { id: 'u1', displayName: 'Alice Anderson', avatarUrl: null },
+          { id: 'u2', displayName: 'Bob Brown', avatarUrl: null },
+        ]),
+      );
     });
   });
 
@@ -36,7 +44,12 @@ describe('Conversations (e2e)', () => {
     it('creates a conversation with a recipient by email (returned directly)', async () => {
       await request(app.getHttpServer())
         .post('/auth/signup')
-        .send({ email: 'carol@example.com', name: 'Carol', password: 'password' });
+        .send({
+          email: 'carol@example.com',
+          firstName: 'Carol',
+          lastName: 'Carter',
+          password: 'password',
+        });
 
       const res = await request(app.getHttpServer())
         .post('/conversations')
@@ -47,6 +60,16 @@ describe('Conversations (e2e)', () => {
       expect(res.body.id).toMatch(/^c-/);
       expect(res.body.title).toBe('carol@example.com');
       expect(res.body.lastMessage).toBe('');
+      expect(res.body.participants).toEqual(
+        expect.arrayContaining([
+          { id: 'u1', displayName: 'Alice Anderson', avatarUrl: null },
+          // Carol signed up just now, so she carries the in-DB default avatar.
+          expect.objectContaining({
+            displayName: 'Carol Carter',
+            avatarUrl: expect.stringContaining('data:image/svg+xml'),
+          }),
+        ]),
+      );
     });
 
     it('returns 409 CONFLICT when a conversation with the recipient already exists', async () => {

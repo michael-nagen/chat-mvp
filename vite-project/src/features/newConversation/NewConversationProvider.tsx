@@ -31,7 +31,7 @@ export function NewConversationProvider({ children }: { children: ReactNode }): 
     try {
       const conversation = await createConversation(email.trim());
       refreshConversations();
-      selectConversation(conversation.id);
+      selectConversation(conversation.id, conversation);
       cancel();
     } catch (err) {
       showToast(err instanceof Error ? err.message : 'Failed to create conversation');

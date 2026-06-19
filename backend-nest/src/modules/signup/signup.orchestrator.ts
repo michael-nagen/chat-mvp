@@ -14,13 +14,18 @@ export class SignupOrchestrator {
     private readonly jwt: JwtService,
   ) {}
 
-  async run({ email, name, password }: SignupInput): Promise<SignupOutput> {
+  async run({
+    email,
+    firstName,
+    lastName,
+    password,
+  }: SignupInput): Promise<SignupOutput> {
     if (await this.users.findByEmail(email)) {
       throw new ConflictException('Email is already registered.');
     }
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
     const user = toUserResponse(
-      await this.users.create({ email, name, passwordHash }),
+      await this.users.create({ email, firstName, lastName, passwordHash }),
     );
     return { user, token: this.jwt.sign({ sub: user.id, email: user.email }) };
   }

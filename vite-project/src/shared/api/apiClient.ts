@@ -56,5 +56,8 @@ export const post = <T>(path: string, body?: unknown, options?: HelperOptions): 
 export const patch = <T>(path: string, body?: unknown, options?: HelperOptions): Promise<T> =>
   request<T>(path, { ...options, method: 'PATCH', body });
 
+export const put = <T>(path: string, body?: unknown, options?: HelperOptions): Promise<T> =>
+  request<T>(path, { ...options, method: 'PUT', body });
+
 export const del = <T>(path: string, options?: HelperOptions): Promise<T> =>
   request<T>(path, { ...options, method: 'DELETE' });

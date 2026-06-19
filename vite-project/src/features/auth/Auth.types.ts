@@ -20,6 +20,7 @@ export type AuthAction =
   | { type: 'LOGIN_START' }
   | { type: 'LOGIN_SUCCESS'; user: User; token: string }
   | { type: 'LOGIN_ERROR'; error: string }
+  | { type: 'USER_UPDATED'; user: User }
   | { type: 'LOGOUT' };
 
 /** Public shape of the auth context consumed by any component via useAuth. */
@@ -30,7 +31,14 @@ export type AuthContextValue = {
   error: string | null;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
-  signup: (email: string, password: string, name: string) => Promise<void>;
+  signup: (
+    email: string,
+    password: string,
+    firstName: string,
+    lastName: string,
+  ) => Promise<void>;
+  // Replaces the current user after a profile change (name/email/avatar).
+  updateUser: (user: User) => void;
   logout: () => void;
 };
 
@@ -40,8 +48,10 @@ export type AuthScreenViewProps = {
   onToggleMode: () => void;
   email: string;
   onEmailChange: (value: string) => void;
-  name: string;
-  onNameChange: (value: string) => void;
+  firstName: string;
+  onFirstNameChange: (value: string) => void;
+  lastName: string;
+  onLastNameChange: (value: string) => void;
   password: string;
   onPasswordChange: (value: string) => void;
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;

@@ -9,8 +9,8 @@ export class InMemoryStoreService implements OnModuleInit {
   // Plaintext here for readability; hashed in place at boot so login's
   // bcrypt.compare matches (see onModuleInit).
   readonly knownUsers: Record<string, User> = {
-    u1: { id: 'u1', email: 'alice@example.com', name: 'Alice', passwordHash: 'password' },
-    u2: { id: 'u2', email: 'bob@example.com', name: 'Bob', passwordHash: 'password' },
+    u1: { id: 'u1', email: 'alice@example.com', firstName: 'Alice', lastName: 'Anderson', passwordHash: 'password' },
+    u2: { id: 'u2', email: 'bob@example.com', firstName: 'Bob', lastName: 'Brown', passwordHash: 'password' },
   };
 
   async onModuleInit(): Promise<void> {

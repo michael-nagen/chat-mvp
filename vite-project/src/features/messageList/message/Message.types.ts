@@ -1,5 +1,9 @@
 import type { Message } from '../../../shared/entities/Message.types';
 
-export type MessageViewProps = {
+export type MessageProps = {
+  message: Message;
+};
+
+export type MessageContextValue = {
   message: Message;
 };

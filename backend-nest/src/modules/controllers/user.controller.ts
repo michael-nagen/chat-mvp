@@ -1,16 +1,95 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Patch,
+  Post,
+  Put,
+  UseGuards,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser, AuthUser } from '../auth/current-user.decorator';
 import { GetMeOrchestrator } from '../get-me/get-me.orchestrator';
 import type { GetMeOutput } from '../get-me/get-me.module';
+import { UpdateProfileOrchestrator } from '../update-profile/update-profile.orchestrator';
+import type { UpdateProfileOutput } from '../update-profile/update-profile.module';
+import { UpdateEmailOrchestrator } from '../update-email/update-email.orchestrator';
+import type { UpdateEmailOutput } from '../update-email/update-email.module';
+import { RequestAvatarUploadOrchestrator } from '../request-avatar-upload/request-avatar-upload.orchestrator';
+import type { RequestAvatarUploadOutput } from '../request-avatar-upload/request-avatar-upload.module';
+import { SetAvatarOrchestrator } from '../set-avatar/set-avatar.orchestrator';
+import type { SetAvatarOutput } from '../set-avatar/set-avatar.module';
+import { RemoveAvatarOrchestrator } from '../remove-avatar/remove-avatar.orchestrator';
+import type { RemoveAvatarOutput } from '../remove-avatar/remove-avatar.module';
+import { UpdateNameDto } from '../user/dto/update-name.dto';
+import { UpdateEmailDto } from '../user/dto/update-email.dto';
+import { PresignAvatarDto } from '../user/dto/presign-avatar.dto';
+import { SetAvatarDto } from '../user/dto/set-avatar.dto';
 
 @Controller()
 export class UserController {
-  constructor(private readonly getMe: GetMeOrchestrator) {}
+  constructor(
+    private readonly getMe: GetMeOrchestrator,
+    private readonly updateProfile: UpdateProfileOrchestrator,
+    private readonly updateEmail: UpdateEmailOrchestrator,
+    private readonly requestAvatarUpload: RequestAvatarUploadOrchestrator,
+    private readonly setAvatar: SetAvatarOrchestrator,
+    private readonly removeAvatar: RemoveAvatarOrchestrator,
+  ) {}
 
   @UseGuards(JwtAuthGuard)
   @Get('me')
   me(@CurrentUser() user: AuthUser): Promise<GetMeOutput> {
     return this.getMe.run({ userId: user.userId });
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('me/name')
+  updateMyName(
+    @CurrentUser() user: AuthUser,
+    @Body() dto: UpdateNameDto,
+  ): Promise<UpdateProfileOutput> {
+    return this.updateProfile.run({
+      userId: user.userId,
+      firstName: dto.firstName,
+      lastName: dto.lastName,
+    });
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('me/email')
+  updateMyEmail(
+    @CurrentUser() user: AuthUser,
+    @Body() dto: UpdateEmailDto,
+  ): Promise<UpdateEmailOutput> {
+    return this.updateEmail.run({ userId: user.userId, email: dto.email });
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('me/avatar/presign')
+  presignAvatar(
+    @CurrentUser() user: AuthUser,
+    @Body() dto: PresignAvatarDto,
+  ): Promise<RequestAvatarUploadOutput> {
+    return this.requestAvatarUpload.run({
+      userId: user.userId,
+      contentType: dto.contentType,
+    });
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put('me/avatar')
+  setMyAvatar(
+    @CurrentUser() user: AuthUser,
+    @Body() dto: SetAvatarDto,
+  ): Promise<SetAvatarOutput> {
+    return this.setAvatar.run({ userId: user.userId, key: dto.key });
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete('me/avatar')
+  removeMyAvatar(@CurrentUser() user: AuthUser): Promise<RemoveAvatarOutput> {
+    return this.removeAvatar.run({ userId: user.userId });
   }
 }

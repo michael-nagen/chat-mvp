@@ -8,13 +8,15 @@ export function useAuthScreen(): AuthScreenViewProps {
   const { status, error, login, signup } = useAuth();
   const [mode, setMode] = useState<AuthMode>('login');
   const [email, setEmail] = useState('');
-  const [name, setName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [password, setPassword] = useState('');
 
   const isLoading = status === 'loading';
   const needsName = mode === 'signup';
   const submittable =
-    canSubmit({ email, password, isLoading }) && (!needsName || name.trim().length > 0);
+    canSubmit({ email, password, isLoading }) &&
+    (!needsName || (firstName.trim().length > 0 && lastName.trim().length > 0));
 
   function onSubmit(event: React.FormEvent<HTMLFormElement>): void {
     event.preventDefault();
@@ -22,7 +24,7 @@ export function useAuthScreen(): AuthScreenViewProps {
     if (mode === 'login') {
       void login(email.trim(), password);
     } else {
-      void signup(email.trim(), password, name.trim());
+      void signup(email.trim(), password, firstName.trim(), lastName.trim());
     }
   }
 
@@ -31,8 +33,10 @@ export function useAuthScreen(): AuthScreenViewProps {
     onToggleMode: () => setMode(toggleMode),
     email,
     onEmailChange: setEmail,
-    name,
-    onNameChange: setName,
+    firstName,
+    onFirstNameChange: setFirstName,
+    lastName,
+    onLastNameChange: setLastName,
     password,
     onPasswordChange: setPassword,
     onSubmit,

@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConversationsModule } from '../conversations/conversations.module';
 import { ConversationResponse } from '../conversations/conversations.types';
+import { UserModule } from '../user/user.module';
 import { ListConversationsOrchestrator } from './list-conversations.orchestrator';
 
 export interface ListConversationsInput {
@@ -12,7 +13,7 @@ export interface ListConversationsOutput {
 }
 
 @Module({
-  imports: [ConversationsModule],
+  imports: [ConversationsModule, UserModule],
   providers: [ListConversationsOrchestrator],
   exports: [ListConversationsOrchestrator],
 })

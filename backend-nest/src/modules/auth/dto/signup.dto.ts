@@ -6,7 +6,11 @@ export class SignupDto {
 
   @IsString()
   @MinLength(1)
-  name!: string;
+  firstName!: string;
+
+  @IsString()
+  @MinLength(1)
+  lastName!: string;
 
   @IsString()
   @MinLength(6)

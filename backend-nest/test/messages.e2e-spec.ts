@@ -59,7 +59,12 @@ describe('Messages (e2e)', () => {
     it('forbids non-participants from reading a conversation with 403 FORBIDDEN', async () => {
       const signup = await request(app.getHttpServer())
         .post('/auth/signup')
-        .send({ email: 'outsider@example.com', name: 'Outsider', password: 'secret1' });
+        .send({
+          email: 'outsider@example.com',
+          firstName: 'Out',
+          lastName: 'Sider',
+          password: 'secret1',
+        });
       const outsiderToken = signup.body.token;
 
       const res = await request(app.getHttpServer())
@@ -126,7 +131,12 @@ describe('Messages (e2e)', () => {
     it('forbids non-participants from posting with 403 FORBIDDEN', async () => {
       const signup = await request(app.getHttpServer())
         .post('/auth/signup')
-        .send({ email: 'outsider2@example.com', name: 'Outsider Two', password: 'secret1' });
+        .send({
+          email: 'outsider2@example.com',
+          firstName: 'Outsider',
+          lastName: 'Two',
+          password: 'secret1',
+        });
 
       const res = await request(app.getHttpServer())
         .post('/conversations/c1/messages')

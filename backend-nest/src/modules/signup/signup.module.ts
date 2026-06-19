@@ -6,7 +6,8 @@ import { SignupOrchestrator } from './signup.orchestrator';
 
 export interface SignupInput {
   email: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   password: string;
 }
 

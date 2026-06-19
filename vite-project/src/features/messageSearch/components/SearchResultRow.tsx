@@ -1,6 +1,6 @@
 import type { SearchResultRowProps } from '../MessageSearch.types';
 import { messageSearchStyles } from './MessageSearch.styles';
-import { MessageView } from '../../messageList/message/Message.view';
+import { Message } from '../../messageList/message';
 
 /** A single search hit: conversation title above the regular message bubble. */
 export function SearchResultRow({
@@ -12,7 +12,7 @@ export function SearchResultRow({
     <div onClick={onSelect} style={messageSearchStyles.resultRow}>
       <div style={messageSearchStyles.resultTitle}>{conversationTitle}</div>
       <div style={messageSearchStyles.resultBody}>
-        <MessageView message={message} />
+        <Message message={message} />
       </div>
     </div>
   );

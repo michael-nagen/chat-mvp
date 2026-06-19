@@ -1,4 +1,5 @@
 import { useEffect, useReducer } from 'react';
+import type { User } from '../../shared/entities/User.types';
 import type { AuthResponse } from './model/Auth.api';
 import { login as loginRequest, signup as signupRequest } from './model/Auth.api';
 import type { AuthContextValue } from './Auth.types';
@@ -35,6 +36,13 @@ export function useAuthController(): AuthContextValue {
     dispatch({ type: 'LOGOUT' });
   }
 
+  function updateUser(user: User): void {
+    if (state.token) {
+      writeStoredAuth({ user, token: state.token });
+    }
+    dispatch({ type: 'USER_UPDATED', user });
+  }
+
   return {
     status: state.status,
     user: state.user,
@@ -42,8 +50,9 @@ export function useAuthController(): AuthContextValue {
     error: state.error,
     isAuthenticated: state.status === 'authenticated' && state.user !== null,
     login: (email, password) => authenticate(() => loginRequest({ email, password })),
-    signup: (email, password, name) =>
-      authenticate(() => signupRequest({ email, password, name })),
+    signup: (email, password, firstName, lastName) =>
+      authenticate(() => signupRequest({ email, password, firstName, lastName })),
+    updateUser,
     logout,
   };
 }
