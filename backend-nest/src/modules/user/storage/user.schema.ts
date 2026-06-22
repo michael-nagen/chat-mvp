@@ -5,7 +5,7 @@ import { HydratedDocument } from 'mongoose';
 export const USERS_COLLECTION = 'users';
 
 // Persistence schema for the `users` collection. Kept separate from the plain
-// domain entity (modules/memory/entities.ts): only repositories touch this type.
+// domain entity (common/storage/entities): only repositories touch this type.
 @Schema({ collection: USERS_COLLECTION, versionKey: false })
 export class UserDoc {
   // Custom string id (e.g. `u-<uuid>`), not a Mongo ObjectId.
@@ -24,6 +24,10 @@ export class UserDoc {
   // Internal only — never mapped into any DTO.
   @Prop({ type: String, required: true })
   passwordHash!: string;
+
+  // Ids of users this user may start conversations with.
+  @Prop({ type: [String], default: [] })
+  contactIds!: string[];
 
   // Public URL of the current avatar; absent when the user has none.
   @Prop({ type: String, required: false, default: null })

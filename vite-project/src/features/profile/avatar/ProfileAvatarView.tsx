@@ -1,4 +1,6 @@
 import { profileStyles } from '../shared/Profile.styles';
+import { avatarStyles } from './ProfileAvatarView.styles';
+import { profileStrings } from '../profile.strings';
 import { ProfileAvatarImage } from './children/ProfileAvatarImage';
 import { ProfileAvatarUploadButton } from './children/ProfileAvatarUploadButton';
 import { ProfileAvatarRemoveButton } from './children/ProfileAvatarRemoveButton';
@@ -9,10 +11,10 @@ import { ProfileAvatarError } from './children/ProfileAvatarError';
 export function ProfileAvatarView(): React.JSX.Element {
   return (
     <section style={profileStyles.section}>
-      <h2 style={profileStyles.sectionTitle}>Photo</h2>
-      <div style={profileStyles.avatarRow}>
+      <h2 style={profileStyles.sectionTitle}>{profileStrings.sections.photo}</h2>
+      <div style={avatarStyles.avatarRow}>
         <ProfileAvatarImage />
-        <div style={profileStyles.avatarActions}>
+        <div style={avatarStyles.avatarActions}>
           <ProfileAvatarUploadButton />
           <ProfileAvatarRemoveButton />
         </div>

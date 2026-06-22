@@ -4,10 +4,6 @@ export type ConversationRowProps = {
   conversation: Conversation;
 };
 
-export type ConversationRowContextValue = {
-  conversation: Conversation;
-};
-
 export type ConversationRowViewProps = {
   conversation: Conversation;
   isSelected: boolean;

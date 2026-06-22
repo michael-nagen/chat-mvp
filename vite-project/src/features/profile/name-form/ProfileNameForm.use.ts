@@ -2,10 +2,9 @@ import { useState } from 'react';
 import { useAuth } from '../../auth';
 import { useToast } from '../../toast';
 import { updateName } from '../model/Profile.api';
-import type { ProfileNameFormValue } from './ProfileNameForm.types';
 
 /** Owns the first/last name form: local edit state, save action, loading + error. */
-export function useProfileNameForm(): ProfileNameFormValue {
+export function useProfileNameForm() {
   const { user, updateUser } = useAuth();
   const { showToast } = useToast();
   const [firstName, setFirstName] = useState(user?.firstName ?? '');

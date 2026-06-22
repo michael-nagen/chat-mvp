@@ -3,10 +3,10 @@ import { CreateMessageDto } from '../messages/dto/create-message.dto';
 import { ListMessagesQueryDto } from '../messages/dto/list-messages.query.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser, AuthUser } from '../auth/current-user.decorator';
-import { ListMessagesOrchestrator } from '../list-messages/list-messages.orchestrator';
-import type { ListMessagesOutput } from '../list-messages/list-messages.module';
-import { SendMessageOrchestrator } from '../send-message/send-message.orchestrator';
-import type { SendMessageOutput } from '../send-message/send-message.module';
+import { ListMessagesOrchestrator } from '../list-messages-orchestrator/list-messages.orchestrator';
+import type { ListMessagesOutput } from '../list-messages-orchestrator/list-messages.module';
+import { SendMessageOrchestrator } from '../send-message-orchestrator/send-message.orchestrator';
+import type { SendMessageOutput } from '../send-message-orchestrator/send-message.module';
 
 @UseGuards(JwtAuthGuard)
 @Controller('conversations/:conversationId/messages')
@@ -22,7 +22,7 @@ export class MessagesController {
     @Query() query: ListMessagesQueryDto,
     @CurrentUser() user: AuthUser,
   ): Promise<ListMessagesOutput> {
-    return this.listMessages.run({
+    return this.listMessages.execute({
       conversationId,
       userId: user.userId,
       cursor: query.cursor,
@@ -36,7 +36,7 @@ export class MessagesController {
     @Body() dto: CreateMessageDto,
     @CurrentUser() user: AuthUser,
   ): Promise<SendMessageOutput> {
-    return this.sendMessage.run({
+    return this.sendMessage.execute({
       conversationId,
       userId: user.userId,
       content: dto.content,

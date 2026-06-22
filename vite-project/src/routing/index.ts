@@ -1,3 +1,1 @@
-export { LoginRoute } from './LoginRoute';
-export { RequireAuth } from './RequireAuth';
-export { RootRedirect } from './RootRedirect';
+export { routes } from './routes';

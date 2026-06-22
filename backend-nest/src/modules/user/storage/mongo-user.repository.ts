@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { User } from '../../memory/entities';
-import { UserUpdate } from '../user.types';
+import { User } from '../../../common/storage/entities';
+import { UserSummarySource, UserUpdate } from '../user.types';
 import { UserRepository } from '../user.repository';
 import { UserDoc, UserDocument } from './user.schema';
 
@@ -19,14 +19,18 @@ export class MongoUserRepository extends UserRepository {
     return this.toEntity(await this.model.findById(id).lean().exec());
   }
 
-  async findByIds(ids: string[]): Promise<User[]> {
+  async findByIds(ids: string[]): Promise<UserSummarySource[]> {
     const docs = await this.model
       .find({ _id: { $in: ids } })
+      .select('firstName lastName avatarUrl')
       .lean()
       .exec();
-    return docs
-      .map((doc) => this.toEntity(doc))
-      .filter((user): user is User => user !== undefined);
+    return docs.map((doc) => ({
+      id: doc._id,
+      firstName: doc.firstName,
+      lastName: doc.lastName,
+      avatarUrl: doc.avatarUrl ?? null,
+    }));
   }
 
   async findByEmail(email: string): Promise<User | undefined> {
@@ -40,6 +44,7 @@ export class MongoUserRepository extends UserRepository {
       firstName: user.firstName,
       lastName: user.lastName,
       passwordHash: user.passwordHash,
+      contactIds: user.contactIds,
       avatarUrl: user.avatarUrl ?? null,
       avatarKey: user.avatarKey ?? null,
       createdAt: new Date(),
@@ -66,6 +71,7 @@ export class MongoUserRepository extends UserRepository {
       firstName: doc.firstName,
       lastName: doc.lastName,
       passwordHash: doc.passwordHash,
+      contactIds: doc.contactIds ?? [],
       avatarUrl: doc.avatarUrl ?? null,
       avatarKey: doc.avatarKey ?? null,
     };

@@ -1,8 +1,16 @@
 import { SecondaryButton } from '../../shared/SecondaryButton';
+import { profileStrings } from '../../profile.strings';
 import { useProfileAvatarContext } from '../ProfileAvatar.context';
 
-export function ProfileAvatarRemoveButton(): React.JSX.Element | null {
+export function ProfileAvatarRemoveButton(): React.JSX.Element | false {
   const { hasAvatar, isBusy, onRemove } = useProfileAvatarContext();
-  if (!hasAvatar) return null;
-  return <SecondaryButton label="Remove" disabled={isBusy} onClick={() => void onRemove()} />;
+  return (
+    hasAvatar && (
+      <SecondaryButton
+        label={profileStrings.avatar.remove}
+        disabled={isBusy}
+        onClick={() => void onRemove()}
+      />
+    )
+  );
 }

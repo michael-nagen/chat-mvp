@@ -1,4 +1,4 @@
-import { Message } from '../memory/entities';
+import { Message } from '../../common/storage/entities';
 import { MessagePageResponse, MessageResponse } from './messages.types';
 
 // createdAt is exposed to the FE as timestamp.

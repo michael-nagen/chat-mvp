@@ -2,8 +2,8 @@ import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { CreateConversationDto } from '../conversations/dto/create-conversation.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser, AuthUser } from '../auth/current-user.decorator';
-import { ListConversationsOrchestrator } from '../list-conversations/list-conversations.orchestrator';
-import type { ListConversationsOutput } from '../list-conversations/list-conversations.module';
+import { ListConversationsOrchestrator } from '../list-conversations-orchestrator/list-conversations.orchestrator';
+import type { ListConversationsOutput } from '../list-conversations-orchestrator/list-conversations.module';
 import { CreateConversationOrchestrator } from '../create-conversation/create-conversation.orchestrator';
 import type { CreateConversationOutput } from '../create-conversation/create-conversation.module';
 
@@ -17,7 +17,7 @@ export class ConversationsController {
 
   @Get()
   list(@CurrentUser() user: AuthUser): Promise<ListConversationsOutput> {
-    return this.listConversations.run({ userId: user.userId });
+    return this.listConversations.execute({ userId: user.userId });
   }
 
   @Post()

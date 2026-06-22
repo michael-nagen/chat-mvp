@@ -1,15 +1,17 @@
 import { randomUUID } from 'crypto';
 import { Injectable } from '@nestjs/common';
 import { UserRepository } from './user.repository';
+import { UserSummarySource } from './user.types';
 import { DEFAULT_AVATAR_URL } from './user.constants';
-import { User } from '../memory/entities';
+import { User } from '../../common/storage/entities';
+import { ConflictException } from '../../common/errors/app.exception';
 
 @Injectable()
 export class UserService {
   constructor(private readonly repo: UserRepository) {}
 
   // Caller hashes the password; the service only ever stores a hash.
-  create({
+  async create({
     email,
     firstName,
     lastName,
@@ -20,12 +22,17 @@ export class UserService {
     lastName: string;
     passwordHash: string;
   }): Promise<User> {
+    if (await this.repo.findByEmail(email)) {
+      throw new ConflictException('Email is already registered.');
+    }
     const user: User = {
       id: `u-${randomUUID()}`,
       email,
       firstName,
       lastName,
       passwordHash,
+      // New users start with no contacts; contacts are populated elsewhere.
+      contactIds: [],
       // New users start with an in-DB default avatar (no S3 object → no key).
       avatarUrl: DEFAULT_AVATAR_URL,
       avatarKey: null,
@@ -45,13 +52,17 @@ export class UserService {
     return this.repo.update(userId, { firstName, lastName });
   }
 
-  updateEmail({
+  async updateEmail({
     userId,
     email,
   }: {
     userId: string;
     email: string;
   }): Promise<User | undefined> {
+    const owner = await this.repo.findByEmail(email);
+    if (owner && owner.id !== userId) {
+      throw new ConflictException('Email is already registered.');
+    }
     return this.repo.update(userId, { email });
   }
 
@@ -80,7 +91,13 @@ export class UserService {
     return this.repo.findById(id);
   }
 
-  findByIds(ids: string[]): Promise<User[]> {
+  // The ids this user may converse with. Empty when the user is unknown.
+  async getContactIds(userId: string): Promise<string[]> {
+    const user = await this.repo.findById(userId);
+    return user?.contactIds ?? [];
+  }
+
+  findByIds(ids: string[]): Promise<UserSummarySource[]> {
     return this.repo.findByIds(ids);
   }
 

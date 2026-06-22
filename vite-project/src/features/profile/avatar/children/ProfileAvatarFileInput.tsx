@@ -1,4 +1,4 @@
-import { profileStyles } from '../../shared/Profile.styles';
+import { avatarStyles } from '../ProfileAvatarView.styles';
 import { ALLOWED_AVATAR_TYPES } from '../../model/Profile.constants';
 import { useProfileAvatarContext } from '../ProfileAvatar.context';
 
@@ -18,7 +18,7 @@ export function ProfileAvatarFileInput(): React.JSX.Element {
       type="file"
       accept={ALLOWED_AVATAR_TYPES.join(',')}
       onChange={onFileChange}
-      style={profileStyles.hiddenFileInput}
+      style={avatarStyles.hiddenFileInput}
     />
   );
 }

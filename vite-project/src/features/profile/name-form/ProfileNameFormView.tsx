@@ -1,4 +1,5 @@
 import { profileStyles } from '../shared/Profile.styles';
+import { profileStrings } from '../profile.strings';
 import { useProfileNameFormContext } from './ProfileNameForm.context';
 import { ProfileNameFields } from './ProfileNameFields';
 import { ProfileNameError } from './children/ProfileNameError';
@@ -10,7 +11,7 @@ export function ProfileNameFormView(): React.JSX.Element {
 
   return (
     <section style={profileStyles.section}>
-      <h2 style={profileStyles.sectionTitle}>Name</h2>
+      <h2 style={profileStyles.sectionTitle}>{profileStrings.sections.name}</h2>
       <form onSubmit={onSubmit} style={profileStyles.form}>
         <ProfileNameFields />
         <ProfileNameError />

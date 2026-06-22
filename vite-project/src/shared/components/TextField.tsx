@@ -1,5 +1,5 @@
 import type { CSSProperties, HTMLInputTypeAttribute } from 'react';
-import { colors } from '../styles/colors';
+import { textFieldStyles } from './TextField.styles';
 
 type TextFieldProps = {
   type: HTMLInputTypeAttribute;
@@ -11,13 +11,6 @@ type TextFieldProps = {
   autoFocus?: boolean;
   /** Merged over the base input style for per-feature tweaks. */
   style?: CSSProperties;
-};
-
-const baseInput: CSSProperties = {
-  padding: '10px 12px',
-  borderRadius: '6px',
-  border: `1px solid ${colors.border}`,
-  outline: 'none',
 };
 
 /** Controlled text input shared across forms; emits the raw string value. */
@@ -40,7 +33,7 @@ export function TextField({
       autoComplete={autoComplete}
       disabled={disabled}
       autoFocus={autoFocus}
-      style={{ ...baseInput, ...style }}
+      style={{ ...textFieldStyles.input, ...style }}
     />
   );
 }

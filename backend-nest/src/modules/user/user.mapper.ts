@@ -1,5 +1,5 @@
-import { User } from '../memory/entities';
-import { UserResponse, UserSummary } from './user.types';
+import { User } from '../../common/storage/entities';
+import { UserResponse, UserSummary, UserSummarySource } from './user.types';
 
 // password is internal and never exposed on the wire.
 export const toUserResponse = (user: User): UserResponse => ({
@@ -12,7 +12,7 @@ export const toUserResponse = (user: User): UserResponse => ({
 });
 
 // Public summary for other users — no email or internal fields.
-export const toUserSummary = (user: User): UserSummary => ({
+export const toUserSummary = (user: UserSummarySource): UserSummary => ({
   id: user.id,
   displayName: `${user.firstName} ${user.lastName}`,
   avatarUrl: user.avatarUrl ?? null,

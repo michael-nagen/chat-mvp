@@ -1,4 +1,4 @@
-import { Message } from '../memory/entities';
+import { Message } from '../../common/storage/entities';
 
 export interface MessageResponse {
   id: string;

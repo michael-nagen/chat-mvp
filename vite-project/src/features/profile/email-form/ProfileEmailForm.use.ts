@@ -2,10 +2,9 @@ import { useState } from 'react';
 import { useAuth } from '../../auth';
 import { useToast } from '../../toast';
 import { updateEmail } from '../model/Profile.api';
-import type { ProfileEmailFormValue } from './ProfileEmailForm.types';
 
 /** Owns the email form: local edit state, save action, loading + error. */
-export function useProfileEmailForm(): ProfileEmailFormValue {
+export function useProfileEmailForm() {
   const { user, updateUser } = useAuth();
   const { showToast } = useToast();
   const [email, setEmail] = useState(user?.email ?? '');

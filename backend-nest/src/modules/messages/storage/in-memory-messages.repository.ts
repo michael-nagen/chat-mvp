@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InMemoryStoreService } from '../../memory/in-memory-store.service';
-import { Message } from '../../memory/entities';
+import { Message } from '../../../common/storage/entities';
 import { MessagesRepository } from '../messages.repository';
 import { decodeCursor } from '../messages.cursor';
 

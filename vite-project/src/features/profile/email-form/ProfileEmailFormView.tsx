@@ -1,4 +1,5 @@
 import { profileStyles } from '../shared/Profile.styles';
+import { profileStrings } from '../profile.strings';
 import { useProfileEmailFormContext } from './ProfileEmailForm.context';
 import { ProfileEmailFields } from './ProfileEmailFields';
 import { ProfileEmailError } from './children/ProfileEmailError';
@@ -10,7 +11,7 @@ export function ProfileEmailFormView(): React.JSX.Element {
 
   return (
     <section style={profileStyles.section}>
-      <h2 style={profileStyles.sectionTitle}>Email</h2>
+      <h2 style={profileStyles.sectionTitle}>{profileStrings.sections.email}</h2>
       <form onSubmit={onSubmit} style={profileStyles.form}>
         <ProfileEmailFields />
         <ProfileEmailError />

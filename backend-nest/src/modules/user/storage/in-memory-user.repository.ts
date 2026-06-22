@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InMemoryStoreService } from '../../memory/in-memory-store.service';
-import { User } from '../../memory/entities';
-import { UserUpdate } from '../user.types';
+import { User } from '../../../common/storage/entities';
+import { UserSummarySource, UserUpdate } from '../user.types';
 import { UserRepository } from '../user.repository';
 
 // In-memory driver for users, backed by the shared seed store.
@@ -15,11 +15,17 @@ export class InMemoryUserRepository extends UserRepository {
     return Promise.resolve(this.store.knownUsers[id]);
   }
 
-  findByIds(ids: string[]): Promise<User[]> {
+  findByIds(ids: string[]): Promise<UserSummarySource[]> {
     return Promise.resolve(
       ids
         .map((id) => this.store.knownUsers[id])
-        .filter((user): user is User => user !== undefined),
+        .filter((user): user is User => user !== undefined)
+        .map(({ id, firstName, lastName, avatarUrl }) => ({
+          id,
+          firstName,
+          lastName,
+          avatarUrl: avatarUrl ?? null,
+        })),
     );
   }
 

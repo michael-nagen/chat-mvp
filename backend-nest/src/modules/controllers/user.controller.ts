@@ -10,18 +10,18 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser, AuthUser } from '../auth/current-user.decorator';
-import { GetMeOrchestrator } from '../get-me/get-me.orchestrator';
-import type { GetMeOutput } from '../get-me/get-me.module';
-import { UpdateProfileOrchestrator } from '../update-profile/update-profile.orchestrator';
-import type { UpdateProfileOutput } from '../update-profile/update-profile.module';
-import { UpdateEmailOrchestrator } from '../update-email/update-email.orchestrator';
-import type { UpdateEmailOutput } from '../update-email/update-email.module';
-import { RequestAvatarUploadOrchestrator } from '../request-avatar-upload/request-avatar-upload.orchestrator';
-import type { RequestAvatarUploadOutput } from '../request-avatar-upload/request-avatar-upload.module';
-import { SetAvatarOrchestrator } from '../set-avatar/set-avatar.orchestrator';
-import type { SetAvatarOutput } from '../set-avatar/set-avatar.module';
-import { RemoveAvatarOrchestrator } from '../remove-avatar/remove-avatar.orchestrator';
-import type { RemoveAvatarOutput } from '../remove-avatar/remove-avatar.module';
+import { GetMeOrchestrator } from '../get-me-orchestrator/get-me.orchestrator';
+import type { GetMeOutput } from '../get-me-orchestrator/get-me.module';
+import { UpdateProfileOrchestrator } from '../update-profile-orchestrator/update-profile.orchestrator';
+import type { UpdateProfileOutput } from '../update-profile-orchestrator/update-profile.module';
+import { UpdateEmailOrchestrator } from '../update-email-orchestrator/update-email.orchestrator';
+import type { UpdateEmailOutput } from '../update-email-orchestrator/update-email.module';
+import { RequestAvatarUploadOrchestrator } from '../request-avatar-upload-orchestrator/request-avatar-upload.orchestrator';
+import type { RequestAvatarUploadOutput } from '../request-avatar-upload-orchestrator/request-avatar-upload.module';
+import { SetAvatarOrchestrator } from '../set-avatar-orchestrator/set-avatar.orchestrator';
+import type { SetAvatarOutput } from '../set-avatar-orchestrator/set-avatar.module';
+import { RemoveAvatarOrchestrator } from '../remove-avatar-orchestrator/remove-avatar.orchestrator';
+import type { RemoveAvatarOutput } from '../remove-avatar-orchestrator/remove-avatar.module';
 import { UpdateNameDto } from '../user/dto/update-name.dto';
 import { UpdateEmailDto } from '../user/dto/update-email.dto';
 import { PresignAvatarDto } from '../user/dto/presign-avatar.dto';
@@ -41,7 +41,7 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @Get('me')
   me(@CurrentUser() user: AuthUser): Promise<GetMeOutput> {
-    return this.getMe.run({ userId: user.userId });
+    return this.getMe.execute({ userId: user.userId });
   }
 
   @UseGuards(JwtAuthGuard)
@@ -50,7 +50,7 @@ export class UserController {
     @CurrentUser() user: AuthUser,
     @Body() dto: UpdateNameDto,
   ): Promise<UpdateProfileOutput> {
-    return this.updateProfile.run({
+    return this.updateProfile.execute({
       userId: user.userId,
       firstName: dto.firstName,
       lastName: dto.lastName,
@@ -63,7 +63,7 @@ export class UserController {
     @CurrentUser() user: AuthUser,
     @Body() dto: UpdateEmailDto,
   ): Promise<UpdateEmailOutput> {
-    return this.updateEmail.run({ userId: user.userId, email: dto.email });
+    return this.updateEmail.execute({ userId: user.userId, email: dto.email });
   }
 
   @UseGuards(JwtAuthGuard)
@@ -72,7 +72,7 @@ export class UserController {
     @CurrentUser() user: AuthUser,
     @Body() dto: PresignAvatarDto,
   ): Promise<RequestAvatarUploadOutput> {
-    return this.requestAvatarUpload.run({
+    return this.requestAvatarUpload.execute({
       userId: user.userId,
       contentType: dto.contentType,
     });
@@ -84,12 +84,12 @@ export class UserController {
     @CurrentUser() user: AuthUser,
     @Body() dto: SetAvatarDto,
   ): Promise<SetAvatarOutput> {
-    return this.setAvatar.run({ userId: user.userId, key: dto.key });
+    return this.setAvatar.execute({ userId: user.userId, key: dto.key });
   }
 
   @UseGuards(JwtAuthGuard)
   @Delete('me/avatar')
   removeMyAvatar(@CurrentUser() user: AuthUser): Promise<RemoveAvatarOutput> {
-    return this.removeAvatar.run({ userId: user.userId });
+    return this.removeAvatar.execute({ userId: user.userId });
   }
 }

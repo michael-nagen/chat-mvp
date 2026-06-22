@@ -9,6 +9,7 @@ import {
   ConversationSchema,
 } from '../modules/conversations/storage/conversations.schema';
 import { MessageDoc, MessageSchema } from '../modules/messages/storage/messages.schema';
+import { toDmKey } from '../modules/conversations/dm-key';
 
 // Standalone, idempotent seed. Upserts fixtures by stable _id, so re-running
 // never duplicates and never wipes real data. Not run on boot (data must
@@ -32,15 +33,16 @@ export async function seed(): Promise<void> {
   const epoch = new Date('2026-06-04T08:00:00.000Z').getTime();
   const at = (minutes: number): Date => new Date(epoch + minutes * 60_000);
 
+  // Alice knows everyone she has a starter DM with; each other user knows Alice.
   const users = [
-    { _id: 'u1', email: 'alice@example.com', firstName: 'Alice', lastName: 'Anderson', passwordHash, createdAt: at(0) },
-    { _id: 'u2', email: 'bob@example.com', firstName: 'Bob', lastName: 'Brown', passwordHash, createdAt: at(0) },
-    { _id: 'u3', email: 'carol@example.com', firstName: 'Carol', lastName: 'Carter', passwordHash, createdAt: at(0) },
-    { _id: 'u4', email: 'dave@example.com', firstName: 'Dave', lastName: 'Davis', passwordHash, createdAt: at(0) },
-    { _id: 'u5', email: 'eve@example.com', firstName: 'Eve', lastName: 'Evans', passwordHash, createdAt: at(0) },
-    { _id: 'u6', email: 'frank@example.com', firstName: 'Frank', lastName: 'Foster', passwordHash, createdAt: at(0) },
-    { _id: 'u7', email: 'grace@example.com', firstName: 'Grace', lastName: 'Green', passwordHash, createdAt: at(0) },
-    { _id: 'u8', email: 'heidi@example.com', firstName: 'Heidi', lastName: 'Hughes', passwordHash, createdAt: at(0) },
+    { _id: 'u1', email: 'alice@example.com', firstName: 'Alice', lastName: 'Anderson', passwordHash, contactIds: ['u2', 'u3', 'u4', 'u5', 'u6', 'u7', 'u8'], createdAt: at(0) },
+    { _id: 'u2', email: 'bob@example.com', firstName: 'Bob', lastName: 'Brown', passwordHash, contactIds: ['u1'], createdAt: at(0) },
+    { _id: 'u3', email: 'carol@example.com', firstName: 'Carol', lastName: 'Carter', passwordHash, contactIds: ['u1'], createdAt: at(0) },
+    { _id: 'u4', email: 'dave@example.com', firstName: 'Dave', lastName: 'Davis', passwordHash, contactIds: ['u1'], createdAt: at(0) },
+    { _id: 'u5', email: 'eve@example.com', firstName: 'Eve', lastName: 'Evans', passwordHash, contactIds: ['u1'], createdAt: at(0) },
+    { _id: 'u6', email: 'frank@example.com', firstName: 'Frank', lastName: 'Foster', passwordHash, contactIds: ['u1'], createdAt: at(0) },
+    { _id: 'u7', email: 'grace@example.com', firstName: 'Grace', lastName: 'Green', passwordHash, contactIds: ['u1'], createdAt: at(0) },
+    { _id: 'u8', email: 'heidi@example.com', firstName: 'Heidi', lastName: 'Hughes', passwordHash, contactIds: ['u1'], createdAt: at(0) },
   ];
 
   // Everyone after Alice & Bob gets a starter DM with Alice so they are usable
@@ -66,9 +68,9 @@ export async function seed(): Promise<void> {
 
   const lastBig = messages[messages.length - 1];
   const conversations = [
-    { _id: 'c1', participantIds: ['u1', 'u2'], title: 'Alice & Bob', lastMessage: 'See you tomorrow!', lastMessageAt: at(30), createdAt: at(0) },
-    { _id: 'c2', participantIds: ['u1', 'u2'], title: 'Project chat', lastMessage: 'Sounds good.', lastMessageAt: new Date('2026-06-03T17:45:00.000Z'), createdAt: new Date('2026-06-03T17:00:00.000Z') },
-    { _id: BIG_THREAD_ID, participantIds: ['u1', 'u2'], title: 'Big thread', lastMessage: lastBig.content, lastMessageAt: lastBig.createdAt, createdAt: at(100) },
+    { _id: 'c1', participantIds: ['u1', 'u2'], type: 'dm', dmKey: toDmKey(['u1', 'u2']), title: 'Alice & Bob', lastMessage: 'See you tomorrow!', lastMessageAt: at(30), createdAt: at(0) },
+    { _id: 'c2', participantIds: ['u1', 'u2'], type: 'group', title: 'Project chat', lastMessage: 'Sounds good.', lastMessageAt: new Date('2026-06-03T17:45:00.000Z'), createdAt: new Date('2026-06-03T17:00:00.000Z') },
+    { _id: BIG_THREAD_ID, participantIds: ['u1', 'u2'], type: 'group', title: 'Big thread', lastMessage: lastBig.content, lastMessageAt: lastBig.createdAt, createdAt: at(100) },
   ];
 
   // A DM between Alice (u1) and each extra user, with one opening message.
@@ -80,6 +82,8 @@ export async function seed(): Promise<void> {
     conversations.push({
       _id: conversationId,
       participantIds: ['u1', uid],
+      type: 'dm',
+      dmKey: toDmKey(['u1', uid]),
       title: `Alice & ${profile.firstName}`,
       lastMessage: content,
       lastMessageAt: when,

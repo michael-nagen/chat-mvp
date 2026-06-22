@@ -1,17 +1,14 @@
 import { useRoutes } from 'react-router-dom';
-import { ToastProvider } from './features/toast';
-import { AppToast } from './children/AppToast';
-import { loginRoute } from './children/loginRoute';
-import { protectedRoutes } from './children/protectedRoutes';
-import { fallbackRoute } from './children/fallbackRoute';
+import { ToastProvider, Toast } from './features/toast';
+import { routes } from './routing';
 
 // Toast is a global concern, so its provider wraps every route.
 export default function App(): React.JSX.Element {
-  const routes = useRoutes([loginRoute, protectedRoutes, fallbackRoute]);
+  const element = useRoutes(routes);
   return (
     <ToastProvider>
-      {routes}
-      <AppToast />
+      {element}
+      <Toast />
     </ToastProvider>
   );
 }

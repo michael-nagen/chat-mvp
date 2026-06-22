@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ClientSession, FilterQuery, Model } from 'mongoose';
-import { Message } from '../../memory/entities';
+import { Message } from '../../../common/storage/entities';
 import { TxContext } from '../../../common/storage/unit-of-work';
 import { MessagesRepository } from '../messages.repository';
 import { MessageDoc, MessageDocument } from './messages.schema';

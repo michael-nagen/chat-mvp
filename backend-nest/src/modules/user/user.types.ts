@@ -1,3 +1,12 @@
+import { User } from '../../common/storage/entities';
+
+// The fields findByIds projects from storage — exactly what toUserSummary needs,
+// so the query never pulls passwordHash or other internal columns.
+export type UserSummarySource = Pick<
+  User,
+  'id' | 'firstName' | 'lastName' | 'avatarUrl'
+>;
+
 export interface UserResponse {
   id: string;
   email: string;

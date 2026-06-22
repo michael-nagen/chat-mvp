@@ -1,11 +1,12 @@
 import { Link } from 'react-router-dom';
-import { profileStyles } from './shared/Profile.styles';
+import { profilePageStyles } from './ProfilePage.styles';
+import { profileStrings } from './profile.strings';
 
 export function ProfileHeader(): React.JSX.Element {
   return (
-    <div style={profileStyles.header}>
-      <h1 style={profileStyles.title}>Profile</h1>
-      <Link to="/chat" style={profileStyles.backLink}>
+    <div style={profilePageStyles.header}>
+      <h1 style={profilePageStyles.title}>{profileStrings.title}</h1>
+      <Link to="/chat" style={profilePageStyles.backLink}>
         ← Back to chat
       </Link>
     </div>
