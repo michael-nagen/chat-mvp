@@ -1,7 +1,7 @@
 import { NewConversationProvider } from './NewConversationProvider';
 import { NewConversationView } from './NewConversation.view';
 
-/** Sidebar control to start a conversation with a recipient by email. */
+/** Sidebar control that opens the New Conversation modal (DM or group). */
 export function NewConversation(): React.JSX.Element {
   return (
     <NewConversationProvider>

@@ -1,19 +1,15 @@
-import { chatPageStyles } from '../chatPage/components/ChatPage.styles';
 import { useNewConversation } from './NewConversation.context';
 import { NewConversationTrigger } from './NewConversationTrigger';
-import { NewConversationInput } from './NewConversationInput';
-import { NewConversationSubmit } from './NewConversationSubmit';
+import { NewConversationModal } from './children/NewConversationModal';
 
-/** Composes the new-conversation controls: trigger when collapsed, form when open. */
+/** Trigger lives in the sidebar; the modal overlays the screen when open. */
 export function NewConversationView(): React.JSX.Element {
-  const { isOpen, onSubmit } = useNewConversation();
+  const { isOpen } = useNewConversation();
 
-  return isOpen ? (
-    <form onSubmit={(e) => void onSubmit(e)} style={chatPageStyles.newForm}>
-      <NewConversationInput />
-      <NewConversationSubmit />
-    </form>
-  ) : (
-    <NewConversationTrigger />
+  return (
+    <>
+      <NewConversationTrigger />
+      {isOpen && <NewConversationModal />}
+    </>
   );
 }
