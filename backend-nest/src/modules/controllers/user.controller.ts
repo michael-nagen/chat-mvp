@@ -12,6 +12,8 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser, AuthUser } from '../auth/current-user.decorator';
 import { GetMeOrchestrator } from '../get-me-orchestrator/get-me.orchestrator';
 import type { GetMeOutput } from '../get-me-orchestrator/get-me.module';
+import { GetContactsOrchestrator } from '../get-contacts-orchestrator/get-contacts.orchestrator';
+import type { GetContactsOutput } from '../get-contacts-orchestrator/get-contacts.module';
 import { UpdateProfileOrchestrator } from '../update-profile-orchestrator/update-profile.orchestrator';
 import type { UpdateProfileOutput } from '../update-profile-orchestrator/update-profile.module';
 import { UpdateEmailOrchestrator } from '../update-email-orchestrator/update-email.orchestrator';
@@ -31,6 +33,7 @@ import { SetAvatarDto } from '../user/dto/set-avatar.dto';
 export class UserController {
   constructor(
     private readonly getMe: GetMeOrchestrator,
+    private readonly getContacts: GetContactsOrchestrator,
     private readonly updateProfile: UpdateProfileOrchestrator,
     private readonly updateEmail: UpdateEmailOrchestrator,
     private readonly requestAvatarUpload: RequestAvatarUploadOrchestrator,
@@ -42,6 +45,14 @@ export class UserController {
   @Get('me')
   me(@CurrentUser() user: AuthUser): Promise<GetMeOutput> {
     return this.getMe.execute({ userId: user.userId });
+  }
+
+  // The contacts the New Conversation flow lists; participants are restricted
+  // to this set server-side on conversation creation.
+  @UseGuards(JwtAuthGuard)
+  @Get('me/contacts')
+  myContacts(@CurrentUser() user: AuthUser): Promise<GetContactsOutput> {
+    return this.getContacts.execute({ userId: user.userId });
   }
 
   @UseGuards(JwtAuthGuard)

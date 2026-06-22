@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { GetMeModule } from '../get-me-orchestrator/get-me.module';
+import { GetContactsModule } from '../get-contacts-orchestrator/get-contacts.module';
 import { UpdateProfileModule } from '../update-profile-orchestrator/update-profile.module';
 import { UpdateEmailModule } from '../update-email-orchestrator/update-email.module';
 import { RequestAvatarUploadModule } from '../request-avatar-upload-orchestrator/request-avatar-upload.module';
@@ -8,7 +9,8 @@ import { RemoveAvatarModule } from '../remove-avatar-orchestrator/remove-avatar.
 import { SignupModule } from '../signup-orchestrator/signup.module';
 import { LoginModule } from '../login-orchestrator/login.module';
 import { ListConversationsModule } from '../list-conversations-orchestrator/list-conversations.module';
-import { CreateConversationModule } from '../create-conversation/create-conversation.module';
+import { CreateDmModule } from '../create-dm-orchestrator/create-dm.module';
+import { CreateGroupModule } from '../create-group-orchestrator/create-group.module';
 import { ListMessagesModule } from '../list-messages-orchestrator/list-messages.module';
 import { SendMessageModule } from '../send-message-orchestrator/send-message.module';
 import { SearchMessagesModule } from '../search-messages-orchestrator/search-messages.module';
@@ -22,6 +24,7 @@ import { SearchController } from './search.controller';
 @Module({
   imports: [
     GetMeModule,
+    GetContactsModule,
     UpdateProfileModule,
     UpdateEmailModule,
     RequestAvatarUploadModule,
@@ -30,7 +33,8 @@ import { SearchController } from './search.controller';
     SignupModule,
     LoginModule,
     ListConversationsModule,
-    CreateConversationModule,
+    CreateDmModule,
+    CreateGroupModule,
     ListMessagesModule,
     SendMessageModule,
     SearchMessagesModule,

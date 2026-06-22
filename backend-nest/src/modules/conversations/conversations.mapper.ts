@@ -1,4 +1,4 @@
-import { Conversation } from '../memory/entities';
+import { Conversation } from '../../common/storage/entities';
 import { UserSummary } from '../user/user.types';
 import { ConversationResponse } from './conversations.types';
 

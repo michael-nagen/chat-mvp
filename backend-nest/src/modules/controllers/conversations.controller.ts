@@ -1,18 +1,30 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
-import { CreateConversationDto } from '../conversations/dto/create-conversation.dto';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpStatus,
+  Post,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
+import { Response } from 'express';
+import { CreateDmDto } from '../conversations/dto/create-dm.dto';
+import { CreateGroupDto } from '../conversations/dto/create-group.dto';
+import { ConversationResponse } from '../conversations/conversations.types';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser, AuthUser } from '../auth/current-user.decorator';
 import { ListConversationsOrchestrator } from '../list-conversations-orchestrator/list-conversations.orchestrator';
 import type { ListConversationsOutput } from '../list-conversations-orchestrator/list-conversations.module';
-import { CreateConversationOrchestrator } from '../create-conversation/create-conversation.orchestrator';
-import type { CreateConversationOutput } from '../create-conversation/create-conversation.module';
+import { CreateDmOrchestrator } from '../create-dm-orchestrator/create-dm.orchestrator';
+import { CreateGroupOrchestrator } from '../create-group-orchestrator/create-group.orchestrator';
 
 @UseGuards(JwtAuthGuard)
 @Controller('conversations')
 export class ConversationsController {
   constructor(
     private readonly listConversations: ListConversationsOrchestrator,
-    private readonly createConversation: CreateConversationOrchestrator,
+    private readonly createDm: CreateDmOrchestrator,
+    private readonly createGroup: CreateGroupOrchestrator,
   ) {}
 
   @Get()
@@ -20,14 +32,31 @@ export class ConversationsController {
     return this.listConversations.execute({ userId: user.userId });
   }
 
-  @Post()
-  create(
+  // Get-or-create: 201 when a new DM is created, 200 when an equivalent DM
+  // already existed (idempotent by the normalized participant set).
+  @Post('dm')
+  async createDmConversation(
     @CurrentUser() user: AuthUser,
-    @Body() dto: CreateConversationDto,
-  ): Promise<CreateConversationOutput> {
-    return this.createConversation.run({
-      email: dto.email,
+    @Body() dto: CreateDmDto,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<ConversationResponse> {
+    const { conversation, alreadyExisted } = await this.createDm.execute({
+      requestedIds: dto.participantIds,
       userId: user.userId,
+    });
+    res.status(alreadyExisted ? HttpStatus.OK : HttpStatus.CREATED);
+    return conversation;
+  }
+
+  @Post('groups')
+  createGroupConversation(
+    @CurrentUser() user: AuthUser,
+    @Body() dto: CreateGroupDto,
+  ): Promise<ConversationResponse> {
+    return this.createGroup.execute({
+      requestedIds: dto.participantIds,
+      userId: user.userId,
+      title: dto.title,
     });
   }
 }

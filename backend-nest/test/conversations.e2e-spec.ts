@@ -1,6 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { createTestApp, login } from './utils/createTestApp';
+import { createTestApp, login, setContacts } from './utils/createTestApp';
 
 describe('Conversations (e2e)', () => {
   let app: INestApplication;
@@ -40,66 +40,225 @@ describe('Conversations (e2e)', () => {
     });
   });
 
-  describe('POST /conversations', () => {
-    it('creates a conversation with a recipient by email (returned directly)', async () => {
-      await request(app.getHttpServer())
-        .post('/auth/signup')
-        .send({
-          email: 'carol@example.com',
-          firstName: 'Carol',
-          lastName: 'Carter',
-          password: 'password',
-        });
+  // Signs up a user and returns their generated id, so the id-based create
+  // endpoints can be exercised with real participants.
+  const signup = async (firstName: string, lastName: string): Promise<string> => {
+    const res = await request(app.getHttpServer())
+      .post('/auth/signup')
+      .send({
+        email: `${firstName.toLowerCase()}@example.com`,
+        firstName,
+        lastName,
+        password: 'password',
+      });
+    return res.body.user.id as string;
+  };
+
+  describe('POST /conversations/dm', () => {
+    it('requires a token', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/conversations/dm')
+        .send({ participantIds: ['u2'] });
+      expect(res.status).toBe(401);
+    });
+
+    it('creates a DM (201) with a name-derived title and resolved participants', async () => {
+      const carolId = await signup('Carol', 'Carter');
+      setContacts(app, 'u1', [carolId]);
 
       const res = await request(app.getHttpServer())
-        .post('/conversations')
+        .post('/conversations/dm')
         .set('Authorization', `Bearer ${token}`)
-        .send({ email: 'carol@example.com' });
+        .send({ participantIds: [carolId] });
 
       expect(res.status).toBe(201);
       expect(res.body.id).toMatch(/^c-/);
-      expect(res.body.title).toBe('carol@example.com');
+      expect(res.body.title).toBe('Carol Carter');
       expect(res.body.lastMessage).toBe('');
       expect(res.body.participants).toEqual(
         expect.arrayContaining([
           { id: 'u1', displayName: 'Alice Anderson', avatarUrl: null },
-          // Carol signed up just now, so she carries the in-DB default avatar.
-          expect.objectContaining({
-            displayName: 'Carol Carter',
-            avatarUrl: expect.stringContaining('data:image/svg+xml'),
-          }),
+          expect.objectContaining({ displayName: 'Carol Carter' }),
         ]),
       );
     });
 
-    it('returns 409 CONFLICT when a conversation with the recipient already exists', async () => {
-      const res = await request(app.getHttpServer())
-        .post('/conversations')
-        .set('Authorization', `Bearer ${token}`)
-        .send({ email: 'bob@example.com' });
+    it('supports a multi-participant DM titled by the other members', async () => {
+      const carolId = await signup('Carol', 'Carter');
+      const daveId = await signup('Dave', 'Davis');
+      setContacts(app, 'u1', [carolId, daveId]);
 
-      expect(res.status).toBe(409);
-      expect(res.body.error.code).toBe('CONFLICT');
+      const res = await request(app.getHttpServer())
+        .post('/conversations/dm')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ participantIds: [carolId, daveId] });
+
+      expect(res.status).toBe(201);
+      expect(res.body.title).toBe('Carol Carter, Dave Davis');
     });
 
-    it('returns 404 NOT_FOUND for an unknown recipient email', async () => {
-      const res = await request(app.getHttpServer())
-        .post('/conversations')
+    it('is idempotent and order-independent (200 with the existing DM)', async () => {
+      const carolId = await signup('Carol', 'Carter');
+      const daveId = await signup('Dave', 'Davis');
+      setContacts(app, 'u1', [carolId, daveId]);
+
+      const first = await request(app.getHttpServer())
+        .post('/conversations/dm')
         .set('Authorization', `Bearer ${token}`)
-        .send({ email: 'ghost@example.com' });
+        .send({ participantIds: [carolId, daveId] });
+      expect(first.status).toBe(201);
+
+      const second = await request(app.getHttpServer())
+        .post('/conversations/dm')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ participantIds: [daveId, carolId] });
+
+      expect(second.status).toBe(200);
+      expect(second.body.id).toBe(first.body.id);
+    });
+
+    it('returns the existing seeded DM rather than duplicating it', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/conversations/dm')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ participantIds: ['u2'] });
+
+      expect(res.status).toBe(200);
+      expect(res.body.id).toBe('c1');
+    });
+
+    it('returns 404 NOT_FOUND when a participant id does not exist', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/conversations/dm')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ participantIds: ['ghost'] });
 
       expect(res.status).toBe(404);
       expect(res.body.error.code).toBe('NOT_FOUND');
     });
 
-    it('returns 400 VALIDATION_ERROR for a non-email body', async () => {
+    it('returns 400 VALIDATION_ERROR when only the current user resolves', async () => {
       const res = await request(app.getHttpServer())
-        .post('/conversations')
+        .post('/conversations/dm')
         .set('Authorization', `Bearer ${token}`)
-        .send({ email: 'not-an-email' });
+        .send({ participantIds: ['u1'] });
 
       expect(res.status).toBe(400);
       expect(res.body.error.code).toBe('VALIDATION_ERROR');
+    });
+
+    it('returns 403 FORBIDDEN when a participant is not a contact', async () => {
+      const eveId = await signup('Eve', 'Evans');
+      // Eve is a real user but deliberately not added to Alice's contacts.
+
+      const res = await request(app.getHttpServer())
+        .post('/conversations/dm')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ participantIds: [eveId] });
+
+      expect(res.status).toBe(403);
+      expect(res.body.error.code).toBe('FORBIDDEN');
+    });
+
+    it('returns 400 VALIDATION_ERROR for too many participants', async () => {
+      const tooMany = Array.from({ length: 16 }, (_, i) => `x${i}`);
+      const res = await request(app.getHttpServer())
+        .post('/conversations/dm')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ participantIds: tooMany });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error.code).toBe('VALIDATION_ERROR');
+    });
+
+    it('returns 400 VALIDATION_ERROR for an empty participant list', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/conversations/dm')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ participantIds: [] });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error.code).toBe('VALIDATION_ERROR');
+    });
+  });
+
+  describe('POST /conversations/groups', () => {
+    it('requires a token', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/conversations/groups')
+        .send({ participantIds: ['u2'] });
+      expect(res.status).toBe(401);
+    });
+
+    it('creates a group (201) with the provided title', async () => {
+      const carolId = await signup('Carol', 'Carter');
+      setContacts(app, 'u1', ['u2', carolId]);
+
+      const res = await request(app.getHttpServer())
+        .post('/conversations/groups')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ participantIds: ['u2', carolId], title: 'Team' });
+
+      expect(res.status).toBe(201);
+      expect(res.body.title).toBe('Team');
+      expect(res.body.participants).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ id: 'u1' }),
+          expect.objectContaining({ id: 'u2' }),
+          expect.objectContaining({ displayName: 'Carol Carter' }),
+        ]),
+      );
+    });
+
+    it('falls back to a name-derived title when none is provided', async () => {
+      const carolId = await signup('Carol', 'Carter');
+      setContacts(app, 'u1', ['u2', carolId]);
+
+      const res = await request(app.getHttpServer())
+        .post('/conversations/groups')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ participantIds: ['u2', carolId] });
+
+      expect(res.status).toBe(201);
+      expect(res.body.title).toBe('Bob Brown, Carol Carter');
+    });
+
+    it('allows multiple groups with the exact same participants', async () => {
+      const first = await request(app.getHttpServer())
+        .post('/conversations/groups')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ participantIds: ['u2'], title: 'One' });
+      const second = await request(app.getHttpServer())
+        .post('/conversations/groups')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ participantIds: ['u2'], title: 'Two' });
+
+      expect(first.status).toBe(201);
+      expect(second.status).toBe(201);
+      expect(first.body.id).not.toBe(second.body.id);
+    });
+
+    it('returns 400 VALIDATION_ERROR for too many participants', async () => {
+      const tooMany = Array.from({ length: 31 }, (_, i) => `x${i}`);
+      const res = await request(app.getHttpServer())
+        .post('/conversations/groups')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ participantIds: tooMany });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error.code).toBe('VALIDATION_ERROR');
+    });
+
+    it('returns 403 FORBIDDEN when a participant is not a contact', async () => {
+      const eveId = await signup('Eve', 'Evans');
+
+      const res = await request(app.getHttpServer())
+        .post('/conversations/groups')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ participantIds: ['u2', eveId], title: 'Team' });
+
+      expect(res.status).toBe(403);
+      expect(res.body.error.code).toBe('FORBIDDEN');
     });
   });
 });

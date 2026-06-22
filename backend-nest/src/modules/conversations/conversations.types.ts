@@ -1,4 +1,12 @@
+import { Conversation } from '../../common/storage/entities';
 import { UserSummary } from '../user/user.types';
+
+// DM creation is get-or-create: `alreadyExisted` lets the caller surface 200 vs 201
+// without a conflict error.
+export interface CreateDmResult {
+  conversation: Conversation;
+  alreadyExisted: boolean;
+}
 
 export interface ConversationResponse {
   id: string;

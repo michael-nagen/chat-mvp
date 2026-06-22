@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InMemoryStoreService } from '../../memory/in-memory-store.service';
-import { Conversation } from '../../memory/entities';
+import { Conversation } from '../../../common/storage/entities';
 import { ConversationsRepository } from '../conversations.repository';
+import { ConflictException } from '../../../common/errors/app.exception';
 
 // In-memory driver for conversations, backed by the shared seed store.
 @Injectable()
@@ -20,20 +21,22 @@ export class InMemoryConversationsRepository extends ConversationsRepository {
     return Promise.resolve(rows);
   }
 
-  findBetween(
-    userId: string,
-    recipientId: string,
-  ): Promise<Conversation | undefined> {
+  findByDmKey(dmKey: string): Promise<Conversation | undefined> {
     return Promise.resolve(
-      this.store.conversations.find(
-        (c) =>
-          c.participantIds.includes(userId) &&
-          c.participantIds.includes(recipientId),
-      ),
+      this.store.conversations.find((c) => c.dmKey === dmKey),
     );
   }
 
   insert(conversation: Conversation): Promise<Conversation> {
+    // Mirrors the Mongo partial unique `dmKey` index: the loser of a concurrent
+    // create (both past the service's findByDmKey pre-check) is rejected here.
+    // The store is the single source of truth, so seeded DMs are covered too.
+    if (
+      conversation.dmKey !== undefined &&
+      this.store.conversations.some((c) => c.dmKey === conversation.dmKey)
+    ) {
+      throw new ConflictException('Conversation already exists.');
+    }
     this.store.conversations.push(conversation);
     return Promise.resolve(conversation);
   }
