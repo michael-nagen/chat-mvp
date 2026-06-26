@@ -10,6 +10,7 @@ import {
 import { Response } from 'express';
 import { CreateDmDto } from '../conversations/dto/create-dm.dto';
 import { CreateGroupDto } from '../conversations/dto/create-group.dto';
+import { CreateAssistantDto } from '../conversations/dto/create-assistant.dto';
 import { ConversationResponse } from '../conversations/conversations.types';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser, AuthUser } from '../auth/current-user.decorator';
@@ -17,6 +18,7 @@ import { ListConversationsOrchestrator } from '../list-conversations-orchestrato
 import type { ListConversationsOutput } from '../list-conversations-orchestrator/list-conversations.module';
 import { CreateDmOrchestrator } from '../create-dm-orchestrator/create-dm.orchestrator';
 import { CreateGroupOrchestrator } from '../create-group-orchestrator/create-group.orchestrator';
+import { CreateAssistantConversationOrchestrator } from '../create-assistant-conversation-orchestrator/create-assistant-conversation.orchestrator';
 
 @UseGuards(JwtAuthGuard)
 @Controller('conversations')
@@ -25,6 +27,7 @@ export class ConversationsController {
     private readonly listConversations: ListConversationsOrchestrator,
     private readonly createDm: CreateDmOrchestrator,
     private readonly createGroup: CreateGroupOrchestrator,
+    private readonly createAssistant: CreateAssistantConversationOrchestrator,
   ) {}
 
   @Get()
@@ -55,6 +58,18 @@ export class ConversationsController {
   ): Promise<ConversationResponse> {
     return this.createGroup.execute({
       requestedIds: dto.participantIds,
+      userId: user.userId,
+      title: dto.title,
+    });
+  }
+
+  // Single-user AI conversation; the assistant is implicit from the type.
+  @Post('assistant')
+  createAssistantConversation(
+    @CurrentUser() user: AuthUser,
+    @Body() dto: CreateAssistantDto,
+  ): Promise<ConversationResponse> {
+    return this.createAssistant.execute({
       userId: user.userId,
       title: dto.title,
     });
