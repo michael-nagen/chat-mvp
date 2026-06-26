@@ -25,6 +25,24 @@ export function useMessageThreadController(): MessageThreadContextValue {
     (tempId: string) => dispatch({ type: 'ROLLBACK', tempId }),
     [],
   );
+  const appendAssistantDelta = useCallback(
+    (tempId: string, delta: string) =>
+      dispatch({ type: 'APPEND_ASSISTANT_DELTA', tempId, delta }),
+    [],
+  );
+  const finishAssistant = useCallback(
+    (tempId: string, messageId: string) =>
+      dispatch({ type: 'FINISH_ASSISTANT', tempId, messageId }),
+    [],
+  );
 
-  return { messages, replaceMessages, addOptimisticMessage, confirmMessage, rollbackMessage };
+  return {
+    messages,
+    replaceMessages,
+    addOptimisticMessage,
+    confirmMessage,
+    rollbackMessage,
+    appendAssistantDelta,
+    finishAssistant,
+  };
 }

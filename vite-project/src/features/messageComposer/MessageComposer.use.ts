@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { MessageComposerViewProps } from './MessageComposer.types';
 import { useChatSelection } from '../chatPage/ChatSelection.context';
 import { useMessageThread } from '../messageThread';
+import { useAssistantReply } from '../assistantReply';
 import { useAuth } from '../auth';
 import { useToast } from '../toast';
 import {
@@ -11,13 +12,11 @@ import {
   sendOptimisticMessage,
 } from './model/MessageComposer.utils';
 
-/**
- * Manages draft text, optimistic send, rollback on failure,
- * and exposes form handlers for the selected conversation.
- */
+
 export function useMessageComposer(): MessageComposerViewProps {
-  const { selectedConversationId } = useChatSelection();
+  const { selectedConversationId, selectedConversation } = useChatSelection();
   const { addOptimisticMessage, confirmMessage, rollbackMessage } = useMessageThread();
+  const { streamReply } = useAssistantReply();
   const { user } = useAuth();
   const { showToast } = useToast();
   const [draft, setDraft] = useState({ conversationId: selectedConversationId, value: '' });
@@ -36,17 +35,34 @@ export function useMessageComposer(): MessageComposerViewProps {
 
     setValue('');
     setIsSending(true);
-    const result = await sendOptimisticMessage({
-      conversationId: selectedConversationId,
-      content: trimmed,
-      userId: user?.id ?? null,
-      thread: { addOptimisticMessage, confirmMessage, rollbackMessage },
-    });
-    if (!result.ok) {
-      setDraft({ conversationId: selectedConversationId, value: trimmed });
-      showToast(result.error);
+    try {
+      const result = await sendOptimisticMessage({
+        conversationId: selectedConversationId,
+        content: trimmed,
+        userId: user?.id ?? null,
+        thread: { addOptimisticMessage, confirmMessage, rollbackMessage },
+      });
+      if (!result.ok) {
+        setDraft({ conversationId: selectedConversationId, value: trimmed });
+        showToast(result.error);
+        return;
+      }
+      if (selectedConversation?.type === 'assistant') {
+        const assistantSenderId = selectedConversation.participants.find(
+          (p) => p.id !== user?.id,
+        )?.id;
+        if (!assistantSenderId) {
+          showToast('Could not find the assistant in this conversation.');
+          return;
+        }
+        await streamReply({
+          conversationId: selectedConversationId,
+          assistantSenderId,
+        });
+      }
+    } finally {
+      setIsSending(false);
     }
-    setIsSending(false);
   }
 
   const sendable = canSend({ value, isSending });

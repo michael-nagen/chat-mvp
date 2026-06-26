@@ -5,7 +5,10 @@ export type MessageThreadAction =
   | { type: 'REPLACE'; messages: Message[] }
   | { type: 'ADD_OPTIMISTIC'; message: Message }
   | { type: 'CONFIRM'; tempId: string; message: Message }
-  | { type: 'ROLLBACK'; tempId: string };
+  | { type: 'ROLLBACK'; tempId: string }
+  // Streaming assistant reply: grow the in-progress bubble, then stamp its real id.
+  | { type: 'APPEND_ASSISTANT_DELTA'; tempId: string; delta: string }
+  | { type: 'FINISH_ASSISTANT'; tempId: string; messageId: string };
 
 export type MessageThreadContextValue = {
   messages: Message[];
@@ -17,4 +20,8 @@ export type MessageThreadContextValue = {
   confirmMessage: (tempId: string, message: Message) => void;
   /** Drop an optimistic message after a failed send. */
   rollbackMessage: (tempId: string) => void;
+  /** Append a streamed token delta to the in-progress assistant message. */
+  appendAssistantDelta: (tempId: string, delta: string) => void;
+  /** Stamp the persisted message id once streaming completes. */
+  finishAssistant: (tempId: string, messageId: string) => void;
 };
