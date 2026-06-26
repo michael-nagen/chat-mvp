@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
+import { MAX_CONTACTS_PER_USER } from '../user.constants';
 
 // The one place that names the MongoDB collection these documents live in.
 export const USERS_COLLECTION = 'users';
@@ -25,8 +26,14 @@ export class UserDoc {
   @Prop({ type: String, required: true })
   passwordHash!: string;
 
-  // Ids of users this user may start conversations with.
-  @Prop({ type: [String], default: [] })
+  @Prop({
+    type: [String],
+    default: [],
+    validate: {
+      validator: (ids: string[]) => ids.length <= MAX_CONTACTS_PER_USER,
+      message: `A user cannot have more than ${MAX_CONTACTS_PER_USER} contacts.`,
+    },
+  })
   contactIds!: string[];
 
   // Public URL of the current avatar; absent when the user has none.
