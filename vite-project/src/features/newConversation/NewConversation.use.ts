@@ -5,12 +5,17 @@ import {
   initialNewConversationState,
   newConversationReducer,
 } from './model/NewConversation.reducer';
-import { createDm, createGroup } from './model/NewConversation.api';
+import {
+  createAssistant,
+  createDm,
+  createGroup,
+} from './model/NewConversation.api';
 import {
   DM_MAX_CONTACTS,
   DM_MIN_CONTACTS,
   GROUP_MAX_CONTACTS,
 } from './model/NewConversation.constants';
+import type { Conversation } from '../../shared/entities/Conversation.types';
 import type {
   ConversationMode,
   NewConversationContextValue,
@@ -30,19 +35,30 @@ export function useNewConversationController(): NewConversationContextValue {
   const canCreate =
     state.mode === 'dm'
       ? count >= DM_MIN_CONTACTS && count <= DM_MAX_CONTACTS
-      : state.groupTitle.trim().length > 0;
+      : state.mode === 'group'
+        ? state.groupTitle.trim().length > 0
+        : // assistant: nothing to select yet, always creatable.
+          true;
+
+  function createByMode(): Promise<Conversation> {
+    switch (state.mode) {
+      case 'dm':
+        return createDm(state.selectedContactIds);
+      case 'group':
+        return createGroup({
+          participantIds: state.selectedContactIds,
+          title: state.groupTitle.trim(),
+        });
+      case 'assistant':
+        return createAssistant();
+    }
+  }
 
   async function submit(): Promise<void> {
     if (state.isCreating) return;
     dispatch({ type: 'CREATE_START' });
     try {
-      const conversation =
-        state.mode === 'dm'
-          ? await createDm(state.selectedContactIds)
-          : await createGroup({
-              participantIds: state.selectedContactIds,
-              title: state.groupTitle.trim(),
-            });
+      const conversation = await createByMode();
       refreshConversations();
       selectConversation(conversation.id, conversation);
       dispatch({ type: 'CANCEL' });

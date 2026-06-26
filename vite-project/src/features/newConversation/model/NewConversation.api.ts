@@ -19,3 +19,7 @@ export async function createGroup({
 }): Promise<Conversation> {
   return post<Conversation>('/conversations/groups', { participantIds, title });
 }
+
+export async function createAssistant(): Promise<Conversation> {
+  return post<Conversation>('/conversations/assistant', {});
+}

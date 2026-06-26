@@ -1,4 +1,4 @@
-export type ConversationMode = 'dm' | 'group';
+export type ConversationMode = 'dm' | 'group' | 'assistant';
 export type NewConversationStep = 'selectParticipants' | 'groupTitle';
 
 export type NewConversationState = {

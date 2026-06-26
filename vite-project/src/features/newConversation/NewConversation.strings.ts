@@ -1,6 +1,8 @@
 export const newConversationStrings = {
   title: 'New conversation',
-  modes: { dm: 'DM', group: 'Group' },
+  modes: { dm: 'DM', group: 'Group', assistant: 'Assistant' },
+  assistantDescription:
+    'Start a private conversation with the built-in assistant.',
   continue: 'Continue',
   create: 'Create',
   back: 'Back',
