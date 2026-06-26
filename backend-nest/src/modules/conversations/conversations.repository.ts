@@ -5,7 +5,9 @@ import { TxContext } from '../../common/storage/unit-of-work';
 // abstract class, never on a concrete driver.
 export abstract class ConversationsRepository {
   abstract getForUser(userId: string): Promise<Conversation[]>;
-  abstract findByDmKey(dmKey: string): Promise<Conversation | undefined>;
+  abstract findByConversationKey(
+    conversationKey: string,
+  ): Promise<Conversation | undefined>;
   abstract insert(conversation: Conversation): Promise<Conversation>;
   abstract findById(id: string): Promise<Conversation | undefined>;
   abstract updateLastMessage(

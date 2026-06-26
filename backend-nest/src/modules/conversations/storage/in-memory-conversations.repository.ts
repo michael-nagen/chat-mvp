@@ -21,19 +21,23 @@ export class InMemoryConversationsRepository extends ConversationsRepository {
     return Promise.resolve(rows);
   }
 
-  findByDmKey(dmKey: string): Promise<Conversation | undefined> {
+  findByConversationKey(
+    conversationKey: string,
+  ): Promise<Conversation | undefined> {
     return Promise.resolve(
-      this.store.conversations.find((c) => c.dmKey === dmKey),
+      this.store.conversations.find((c) => c.conversationKey === conversationKey),
     );
   }
 
   insert(conversation: Conversation): Promise<Conversation> {
-    // Mirrors the Mongo partial unique `dmKey` index: the loser of a concurrent
-    // create (both past the service's findByDmKey pre-check) is rejected here.
+    // Mirrors the Mongo DM-only unique index: the loser of a concurrent create
+    // (both past the service's findByConversationKey pre-check) is rejected here.
     // The store is the single source of truth, so seeded DMs are covered too.
     if (
-      conversation.dmKey !== undefined &&
-      this.store.conversations.some((c) => c.dmKey === conversation.dmKey)
+      conversation.type === 'dm' &&
+      this.store.conversations.some(
+        (c) => c.type === 'dm' && c.conversationKey === conversation.conversationKey,
+      )
     ) {
       throw new ConflictException('Conversation already exists.');
     }
