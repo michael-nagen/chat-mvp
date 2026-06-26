@@ -44,6 +44,22 @@ export class MongoMessagesRepository extends MessagesRepository {
     return docs.map((doc) => this.toEntity(doc));
   }
 
+  async findRecent({
+    conversationId,
+    limit,
+  }: {
+    conversationId: string;
+    limit: number;
+  }): Promise<Message[]> {
+    const docs = await this.model
+      .find({ conversationId })
+      .sort({ createdAt: -1, _id: -1 })
+      .limit(limit)
+      .lean()
+      .exec();
+    return docs.map((doc) => this.toEntity(doc));
+  }
+
   async matchContent({
     conversationIds,
     needle,

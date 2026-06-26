@@ -25,6 +25,19 @@ export class MessagesService {
     );
   }
 
+  // Most recent messages in a conversation, returned chronologically
+  // (oldest → newest) for context preparation. Bounded by `limit`.
+  async listRecent({
+    conversationId,
+    limit,
+  }: {
+    conversationId: string;
+    limit: number;
+  }): Promise<Message[]> {
+    const recent = await this.repo.findRecent({ conversationId, limit });
+    return recent.reverse();
+  }
+
   create(
     {
       conversationId,

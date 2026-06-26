@@ -36,6 +36,20 @@ export class InMemoryMessagesRepository extends MessagesRepository {
     return Promise.resolve(rows.slice(0, limit + 1));
   }
 
+  findRecent({
+    conversationId,
+    limit,
+  }: {
+    conversationId: string;
+    limit: number;
+  }): Promise<Message[]> {
+    const rows = this.store.messages.filter(
+      (m) => m.conversationId === conversationId,
+    );
+    rows.sort(descending);
+    return Promise.resolve(rows.slice(0, limit));
+  }
+
   matchContent({
     conversationIds,
     needle,

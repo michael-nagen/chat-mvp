@@ -1,0 +1,4 @@
+
+export const HISTORY_TOKEN_BUDGET = 10_000;
+
+export const RECENT_MESSAGES_HARD_CAP = 200;
