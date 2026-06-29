@@ -1,17 +1,18 @@
 import { ChatSelectionProvider } from './ChatSelectionProvider';
+import { ChatParticipantsProvider } from './ChatParticipantsProvider';
 import { ChatPageView } from './components/ChatPage.view';
-import { ToastProvider } from '../toast';
 import { MessageThreadProvider } from '../messageThread';
 
-/** Composes chat feature providers and renders the two-panel layout. */
+/** Composes chat feature providers and renders the two-panel layout.
+ *  Toast is provided globally (see App), so it is not wrapped here. */
 export function ChatPage(): React.JSX.Element {
   return (
     <ChatSelectionProvider>
-      <ToastProvider>
+      <ChatParticipantsProvider>
         <MessageThreadProvider>
           <ChatPageView />
         </MessageThreadProvider>
-      </ToastProvider>
+      </ChatParticipantsProvider>
     </ChatSelectionProvider>
   );
 }

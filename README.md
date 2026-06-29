@@ -103,6 +103,14 @@ service directly. Anything thrown lands in one `errorHandler` that returns
 `{ error: { code, message } }`. See [backend/README.md](backend/README.md) for the full layering
 and error model.
 
+### Calling convention
+
+Functions and methods that take more than one argument receive a single **named-parameter
+object** rather than positional arguments — on both sides of the stack. So a call reads
+`sendUserMessage({ conversationId, content })`, not `sendUserMessage(conversationId, content)`,
+and a service method is `list({ conversationId, userId, cursor, limit })`. Call sites stay
+self-documenting and argument order stops mattering.
+
 ---
 
 ## Frontend feature anatomy
@@ -174,6 +182,8 @@ Two features nest a smaller sub-feature with the same anatomy:
 | `src/features/messageThread`    | Message store — owns the array via a controller + named actions |
 | `src/features/messageList`      | Message list — fetches on selection change, auto-scroll         |
 | `src/features/messageComposer`  | Composer — optimistic send + rollback on failure                |
+| `src/features/messageSearch`    | Search bar — swaps the sidebar for recents/results, exit on click-out |
+| `src/features/newConversation`  | Start a conversation by recipient (409 if one already exists)   |
 | `src/features/toast`            | Global error toast                                              |
 
 For the backend's module anatomy, conventions, and error codes, see

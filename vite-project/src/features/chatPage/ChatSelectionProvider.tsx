@@ -1,17 +1,9 @@
-import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { ChatSelectionContext } from './ChatSelection.context';
+import { useChatSelectionController } from './ChatSelectionProvider.use';
 
 export function ChatSelectionProvider({ children }: { children: ReactNode }): React.JSX.Element {
-  const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
+  const value = useChatSelectionController();
 
-  function selectConversation(id: string): void {
-    setSelectedConversationId(id);
-  }
-
-  return (
-    <ChatSelectionContext.Provider value={{ selectedConversationId, selectConversation }}>
-      {children}
-    </ChatSelectionContext.Provider>
-  );
+  return <ChatSelectionContext.Provider value={value}>{children}</ChatSelectionContext.Provider>;
 }

@@ -1,6 +1,6 @@
 export const colors = {
   overlay: 'rgba(15, 23, 42, 0.45)',
-  background: '#eef2f7',
+  background: '#e8f0ff',
   surface: '#ffffff',
   sidebarSurface: '#f7f9fc',
   textMuted: '#64748b',

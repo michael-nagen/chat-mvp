@@ -30,12 +30,6 @@ export const authStyles = {
     fontSize: '13px',
     color: colors.textMuted,
   },
-  input: {
-    padding: '10px 12px',
-    borderRadius: '6px',
-    border: `1px solid ${colors.border}`,
-    outline: 'none',
-  },
   error: {
     color: colors.danger,
     fontSize: '13px',
@@ -48,4 +42,13 @@ export const authStyles = {
     color: colors.surface,
     cursor: submittable ? 'pointer' : 'default',
   }),
+  toggle: {
+    background: 'none',
+    border: 'none',
+    padding: 0,
+    fontSize: '13px',
+    color: colors.primary,
+    cursor: 'pointer',
+    alignSelf: 'center' as const,
+  },
 };

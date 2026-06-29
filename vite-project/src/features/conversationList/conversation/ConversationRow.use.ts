@@ -7,7 +7,7 @@ export function useConversationRow(): ConversationRowViewProps {
   const { selectedConversationId, selectConversation } = useChatSelection();
 
   function onSelect(): void {
-    selectConversation(conversation.id);
+    selectConversation(conversation.id, conversation);
   }
 
   return {

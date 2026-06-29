@@ -17,6 +17,10 @@ export function authReducer(state: AuthState, action: AuthAction): AuthState {
       return { status: 'authenticated', user: action.user, token: action.token, error: null };
     case 'LOGIN_ERROR':
       return { status: 'error', user: null, token: null, error: action.error };
+    case 'USER_UPDATED':
+      return { ...state, user: action.user };
+    case 'LOGOUT':
+      return initialAuthState;
     default:
       return state;
   }
