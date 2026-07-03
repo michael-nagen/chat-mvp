@@ -12,7 +12,13 @@
     "seed": "ts-node src/scripts/seed.ts",
     "verify:s3": "ts-node src/scripts/verify-s3.ts",
     "verify:assistant": "ts-node src/scripts/verify-assistant.ts",
+    "create:knowledge-index": "ts-node src/scripts/create-knowledge-index.ts",
+    "verify:knowledge-mongo": "ts-node src/scripts/verify-knowledge-mongo.ts",
+    "verify:knowledge-storage": "ts-node src/scripts/verify-knowledge-storage.ts",
     "eval": "ts-node src/eval/run-eval.ts",
+    "eval:rag": "ts-node src/eval/rag/run-rag-eval.ts",
+    "test:rag:atlas": "npm run verify:knowledge-storage && npm run eval:rag",
+    "debug:rag-live": "ts-node src/scripts/debug-rag-live.ts",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage"
@@ -20,6 +26,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1071.0",
     "@aws-sdk/s3-request-presigner": "^3.1071.0",
+    "@langchain/openai": "^1.5.3",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.4",
     "@nestjs/core": "^11.0.1",

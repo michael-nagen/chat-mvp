@@ -1,6 +1,7 @@
 import { DynamicModule, Provider, Type } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
+import { MongooseModule, getConnectionToken } from '@nestjs/mongoose';
 import type { ModelDefinition } from '@nestjs/mongoose';
+import type { Connection } from 'mongoose';
 import { UnitOfWork } from './unit-of-work';
 import { MongoUnitOfWork } from '../../modules/mongo/unit-of-work.mongo';
 import { InMemoryUnitOfWork } from '../../modules/memory/unit-of-work.memory';
@@ -31,12 +32,15 @@ export function repositoryProvider<T>(
 }
 
 // Registers an entity's Mongoose model only when that entity runs on mongo.
+// connectionName binds the model to a named connection (e.g. the dedicated
+// Knowledge/Atlas connection); omit it for the default app connection.
 export function mongoFeatureImports(
   declared: StorageDriver,
   definitions: ModelDefinition[],
+  connectionName?: string,
 ): DynamicModule[] {
   return resolveStorageDriver(declared) === 'mongo'
-    ? [MongooseModule.forFeature(definitions)]
+    ? [MongooseModule.forFeature(definitions, connectionName)]
     : [];
 }
 
@@ -47,14 +51,23 @@ export function needsMongoConnection(declared: StorageDriver[]): boolean {
 
 // Binds UnitOfWork for a flow that spans the given entities. A real Mongo
 // transaction is only possible when every participant runs on mongo; otherwise
-// the boundary is an in-memory no-op.
-export function unitOfWorkProvider(declared: StorageDriver[]): Provider {
+// the boundary is an in-memory no-op. connectionName selects which Mongoose
+// connection the transaction runs on (omit for the default app connection);
+// all participating entities must live on that same connection.
+export function unitOfWorkProvider(
+  declared: StorageDriver[],
+  connectionName?: string,
+): Provider {
   const transactional = declared.every(
     (d) => resolveStorageDriver(d) === 'mongo',
   );
+  if (!transactional) {
+    return { provide: UnitOfWork, useClass: InMemoryUnitOfWork };
+  }
   return {
     provide: UnitOfWork,
-    useClass: transactional ? MongoUnitOfWork : InMemoryUnitOfWork,
+    useFactory: (connection: Connection) => new MongoUnitOfWork(connection),
+    inject: [getConnectionToken(connectionName)],
   };
 }
 
@@ -67,9 +80,12 @@ export function repositoryStorage<T>(opts: {
   mongo: Type<T>;
   memory: Type<T>;
   feature: ModelDefinition;
+  // Binds the model to a named connection (e.g. Knowledge/Atlas); omit for the
+  // default app connection.
+  connectionName?: string;
 }): { imports: DynamicModule[]; providers: Provider[] } {
   return {
-    imports: mongoFeatureImports(opts.driver, [opts.feature]),
+    imports: mongoFeatureImports(opts.driver, [opts.feature], opts.connectionName),
     providers: [
       repositoryProvider(opts.driver, opts.token, {
         mongo: opts.mongo,
