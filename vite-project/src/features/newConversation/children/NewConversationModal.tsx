@@ -4,7 +4,7 @@ import { ContactsProvider } from '../ContactsProvider';
 import { newConversationStrings } from '../NewConversation.strings';
 import { SelectParticipantsStep } from './SelectParticipantsStep';
 import { GroupTitleStep } from './GroupTitleStep';
-import { AssistantStep } from './AssistantStep';
+import { AiConversationStep } from './AiConversationStep';
 
 
 export function NewConversationModal(): React.JSX.Element {
@@ -12,8 +12,14 @@ export function NewConversationModal(): React.JSX.Element {
 
   return (
     <Modal title={newConversationStrings.title} onClose={cancel}>
-      {mode === 'assistant' ? (
-        <AssistantStep />
+      {mode === 'assistant' || mode === 'tutor' ? (
+        <AiConversationStep
+          description={
+            mode === 'tutor'
+              ? newConversationStrings.tutorDescription
+              : newConversationStrings.assistantDescription
+          }
+        />
       ) : (
         <ContactsProvider>
           {step === 'groupTitle' ? <GroupTitleStep /> : <SelectParticipantsStep />}

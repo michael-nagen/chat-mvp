@@ -45,6 +45,15 @@ describe('newConversationReducer', () => {
     expect(next.selectedContactIds).toEqual(['u2']);
   });
 
+  it('switches to tutor mode and stays on step 1', () => {
+    const next = newConversationReducer(open, {
+      type: 'SET_MODE',
+      mode: 'tutor',
+    });
+    expect(next.mode).toBe('tutor');
+    expect(next.step).toBe('selectParticipants');
+  });
+
   it('moves between steps with CONTINUE_TO_TITLE and BACK', () => {
     const onTitle = newConversationReducer(open, { type: 'CONTINUE_TO_TITLE' });
     expect(onTitle.step).toBe('groupTitle');

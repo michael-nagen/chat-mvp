@@ -5,11 +5,7 @@ import {
   initialNewConversationState,
   newConversationReducer,
 } from './model/NewConversation.reducer';
-import {
-  createAssistant,
-  createDm,
-  createGroup,
-} from './model/NewConversation.api';
+import { createConversation } from './model/NewConversation.api';
 import {
   DM_MAX_CONTACTS,
   DM_MIN_CONTACTS,
@@ -43,14 +39,20 @@ export function useNewConversationController(): NewConversationContextValue {
   function createByMode(): Promise<Conversation> {
     switch (state.mode) {
       case 'dm':
-        return createDm(state.selectedContactIds);
+        return createConversation({
+          type: 'dm',
+          contactIds: state.selectedContactIds,
+        });
       case 'group':
-        return createGroup({
-          participantIds: state.selectedContactIds,
+        return createConversation({
+          type: 'group',
+          contactIds: state.selectedContactIds,
           title: state.groupTitle.trim(),
         });
       case 'assistant':
-        return createAssistant();
+        return createConversation({ type: 'assistant' });
+      case 'tutor':
+        return createConversation({ type: 'tutor' });
     }
   }
 

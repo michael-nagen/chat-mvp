@@ -3,7 +3,7 @@ import { newConversationStrings } from '../NewConversation.strings';
 import { newConversationStyles } from '../NewConversation.styles';
 import type { ConversationMode } from '../NewConversation.types';
 
-const MODES: ConversationMode[] = ['dm', 'group', 'assistant'];
+const MODES: ConversationMode[] = ['dm', 'group', 'assistant', 'tutor'];
 
 export function ModeToggle(): React.JSX.Element {
   const { mode, setMode } = useNewConversation();

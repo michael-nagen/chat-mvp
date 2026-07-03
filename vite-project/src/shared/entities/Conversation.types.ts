@@ -1,6 +1,6 @@
 import type { UserSummary } from './User.types';
 
-export type ConversationType = 'dm' | 'group' | 'assistant';
+export type ConversationType = 'dm' | 'group' | 'assistant' | 'tutor';
 
 export type Conversation = {
   id: string;
