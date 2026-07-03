@@ -69,5 +69,12 @@ export function useMessageComposer(): MessageComposerViewProps {
   const handleSubmit = createSubmitHandler({ sendable, onSend: () => void onSend() });
   const handleKeyDown = createKeyDownHandler({ sendable, onSend: () => void onSend() });
 
-  return { value, onChange: setValue, isSending, sendable, handleSubmit, handleKeyDown };
+  return {
+    value,
+    onChange: setValue,
+    isSending,
+    sendable,
+    handleSubmit,
+    handleKeyDown,
+  };
 }
