@@ -32,4 +32,56 @@ describe('toMessage', () => {
       timestamp: '2026-06-10T00:00:00.000Z',
     });
   });
+
+  it('has no metadata when the raw message has none', () => {
+    expect(toMessage({ raw, currentUserId: 'u1' }).metadata).toBeUndefined();
+  });
+
+  it('passes citation metadata through (refs only, with chunkId)', () => {
+    const withCitations: RawMessage = {
+      ...raw,
+      metadata: {
+        citations: [
+          {
+            chunkId: 'kc-1',
+            documentId: 'd1',
+            documentName: 'doc.md',
+            chunkIndex: 0,
+            score: 0.82,
+          },
+        ],
+      },
+    };
+    expect(toMessage({ raw: withCitations, currentUserId: 'u2' }).metadata).toEqual({
+      citations: [
+        {
+          chunkId: 'kc-1',
+          documentId: 'd1',
+          documentName: 'doc.md',
+          chunkIndex: 0,
+          score: 0.82,
+        },
+      ],
+    });
+  });
+
+  it('passes knowledge_upload event metadata through', () => {
+    const uploadEvent: RawMessage = {
+      ...raw,
+      senderId: 'tutor-assistant',
+      content: 'Uploaded knowledge file: rag-test.md',
+      metadata: {
+        kind: 'knowledge_upload',
+        documentId: 'kd-1',
+        documentName: 'rag-test.md',
+        status: 'completed',
+      },
+    };
+    expect(toMessage({ raw: uploadEvent, currentUserId: 'u1' }).metadata).toEqual({
+      kind: 'knowledge_upload',
+      documentId: 'kd-1',
+      documentName: 'rag-test.md',
+      status: 'completed',
+    });
+  });
 });

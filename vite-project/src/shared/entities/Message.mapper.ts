@@ -14,5 +14,6 @@ export function toMessage({
     sender: raw.senderId === currentUserId ? 'user' : 'assistant',
     senderId: raw.senderId,
     timestamp: raw.timestamp,
+    ...(raw.metadata ? { metadata: raw.metadata } : {}),
   };
 }
