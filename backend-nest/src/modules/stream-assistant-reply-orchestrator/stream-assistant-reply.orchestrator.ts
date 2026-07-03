@@ -23,6 +23,10 @@ import type {
 
 const GENERATION_FAILED_CODE = 'ASSISTANT_GENERATION_FAILED';
 const TOOL_LIMIT_CODE = 'ASSISTANT_TOOL_LIMIT';
+// Tutor conversations reach this stream but their retrieval-augmented answering
+// is built in Part 6. Until then we emit a clear not-implemented event rather
+// than running the regular assistant generation for them.
+const TUTOR_NOT_IMPLEMENTED_CODE = 'TUTOR_NOT_IMPLEMENTED';
 
 const MAX_TOOL_ITERATIONS = 5;
 
@@ -45,6 +49,16 @@ export class StreamAssistantReplyOrchestrator {
     conversationId,
     userId,
   }: StreamAssistantReplyInput): AsyncGenerator<MessageEvent> {
+    const conversation = await this.conversations.getById(conversationId);
+    if (conversation?.type === 'tutor') {
+      const data: ErrorEventData = {
+        code: TUTOR_NOT_IMPLEMENTED_CODE,
+        message: 'Tutor responses are not available yet.',
+      };
+      yield { type: 'error', data };
+      return;
+    }
+
     const assistant = await this.resolveAssistant({ conversationId });
     // Running turn input the loop extends with tool calls/results across passes.
     const items = await this.buildInitialItems({

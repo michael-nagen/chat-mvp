@@ -20,6 +20,24 @@ describe('messages.mapper', () => {
     });
   });
 
+  it('passes metadata citations through when present, omits the key otherwise', () => {
+    expect(toMessageResponse(message).metadata).toBeUndefined();
+
+    const withCitations: Message = {
+      ...message,
+      metadata: {
+        citations: [
+          { chunkId: 'kc-1', documentId: 'd1', documentName: 'doc.md', chunkIndex: 0, score: 0.9 },
+        ],
+      },
+    };
+    expect(toMessageResponse(withCitations).metadata).toEqual({
+      citations: [
+        { chunkId: 'kc-1', documentId: 'd1', documentName: 'doc.md', chunkIndex: 0, score: 0.9 },
+      ],
+    });
+  });
+
   it('wraps a page with messages and nextCursor', () => {
     expect(toMessagePageResponse([message], 'm1')).toEqual({
       messages: [toMessageResponse(message)],

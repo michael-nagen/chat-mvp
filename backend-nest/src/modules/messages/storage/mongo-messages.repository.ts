@@ -100,6 +100,8 @@ export class MongoMessagesRepository extends MessagesRepository {
           senderId: message.senderId,
           content: message.content,
           createdAt: new Date(message.createdAt),
+          // Only persist metadata when present; normal messages store none.
+          ...(message.metadata ? { metadata: message.metadata } : {}),
         },
       ],
       { session: tx as ClientSession | undefined },
@@ -114,6 +116,7 @@ export class MongoMessagesRepository extends MessagesRepository {
       senderId: doc.senderId,
       content: doc.content,
       createdAt: doc.createdAt.toISOString(),
+      ...(doc.metadata ? { metadata: doc.metadata } : {}),
     };
   }
 }

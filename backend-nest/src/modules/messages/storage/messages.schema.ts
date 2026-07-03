@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
+import { MessageMetadata } from '../../../common/storage/entities';
 
 // The one place that names the MongoDB collection these documents live in.
 export const MESSAGES_COLLECTION = 'messages';
@@ -23,6 +24,11 @@ export class MessageDoc {
 
   @Prop({ type: Date, required: true })
   createdAt!: Date;
+
+  // Optional, schemaless bag for extra per-message data (currently tutor
+  // citations). Stored as-is; kept flexible for future metadata.
+  @Prop({ type: Object, required: false })
+  metadata?: MessageMetadata;
 }
 
 export type MessageDocument = HydratedDocument<MessageDoc>;
