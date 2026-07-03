@@ -9,14 +9,17 @@ import { RemoveAvatarModule } from '../remove-avatar-orchestrator/remove-avatar.
 import { SignupModule } from '../signup-orchestrator/signup.module';
 import { LoginModule } from '../login-orchestrator/login.module';
 import { ListConversationsModule } from '../list-conversations-orchestrator/list-conversations.module';
-import { CreateDmModule } from '../create-dm-orchestrator/create-dm.module';
-import { CreateGroupModule } from '../create-group-orchestrator/create-group.module';
-import { CreateAssistantConversationModule } from '../create-assistant-conversation-orchestrator/create-assistant-conversation.module';
+import { CreateConversationModule } from '../create-conversation-orchestrator/create-conversation.module';
 import { ListMessagesModule } from '../list-messages-orchestrator/list-messages.module';
 import { SendMessageModule } from '../send-message-orchestrator/send-message.module';
 import { SearchMessagesModule } from '../search-messages-orchestrator/search-messages.module';
 import { GetRecentSearchesModule } from '../get-recent-searches-orchestrator/get-recent-searches.module';
 import { StreamAssistantReplyModule } from '../stream-assistant-reply-orchestrator/stream-assistant-reply.module';
+import { UploadKnowledgeDocumentModule } from '../upload-knowledge-document-orchestrator/upload-knowledge-document.module';
+import { ListKnowledgeDocumentsModule } from '../list-knowledge-documents-orchestrator/list-knowledge-documents.module';
+import { DeleteKnowledgeDocumentModule } from '../delete-knowledge-document-orchestrator/delete-knowledge-document.module';
+import { RetrieveKnowledgeModule } from '../retrieve-knowledge-orchestrator/retrieve-knowledge.module';
+import { GetKnowledgeChunkModule } from '../get-knowledge-chunk-orchestrator/get-knowledge-chunk.module';
 import { ConversationsModule } from '../conversations/conversations.module';
 import { AuthController } from './auth.controller';
 import { UserController } from './user.controller';
@@ -24,6 +27,9 @@ import { ConversationsController } from './conversations.controller';
 import { MessagesController } from './messages.controller';
 import { SearchController } from './search.controller';
 import { AssistantController } from './assistant.controller';
+import { KnowledgeController } from './knowledge.controller';
+import { KnowledgeRetrievalController } from './knowledge-retrieval.controller';
+import { KnowledgeChunkController } from './knowledge-chunk.controller';
 
 @Module({
   imports: [
@@ -37,14 +43,17 @@ import { AssistantController } from './assistant.controller';
     SignupModule,
     LoginModule,
     ListConversationsModule,
-    CreateDmModule,
-    CreateGroupModule,
-    CreateAssistantConversationModule,
+    CreateConversationModule,
     ListMessagesModule,
     SendMessageModule,
     SearchMessagesModule,
     GetRecentSearchesModule,
     StreamAssistantReplyModule,
+    UploadKnowledgeDocumentModule,
+    ListKnowledgeDocumentsModule,
+    DeleteKnowledgeDocumentModule,
+    RetrieveKnowledgeModule,
+    GetKnowledgeChunkModule,
     // AssistantConversationGuard (on AssistantController) injects
     // ConversationsService, so it must be resolvable in this module.
     ConversationsModule,
@@ -56,6 +65,9 @@ import { AssistantController } from './assistant.controller';
     MessagesController,
     SearchController,
     AssistantController,
+    KnowledgeController,
+    KnowledgeRetrievalController,
+    KnowledgeChunkController,
   ],
 })
 export class ControllersModule {}
