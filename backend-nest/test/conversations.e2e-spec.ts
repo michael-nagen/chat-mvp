@@ -40,8 +40,8 @@ describe('Conversations (e2e)', () => {
     });
   });
 
-  // Signs up a user and returns their generated id, so the id-based create
-  // endpoints can be exercised with real participants.
+  // Signs up a user and returns their generated id, so the create endpoint can
+  // be exercised with real participants.
   const signup = async (firstName: string, lastName: string): Promise<string> => {
     const res = await request(app.getHttpServer())
       .post('/auth/signup')
@@ -54,11 +54,11 @@ describe('Conversations (e2e)', () => {
     return res.body.user.id as string;
   };
 
-  describe('POST /conversations/dm', () => {
+  describe('POST /conversations (type: dm)', () => {
     it('requires a token', async () => {
       const res = await request(app.getHttpServer())
-        .post('/conversations/dm')
-        .send({ participantIds: ['u2'] });
+        .post('/conversations')
+        .send({ type: 'dm', contactIds: ['u2'] });
       expect(res.status).toBe(401);
     });
 
@@ -67,9 +67,9 @@ describe('Conversations (e2e)', () => {
       setContacts(app, 'u1', [carolId]);
 
       const res = await request(app.getHttpServer())
-        .post('/conversations/dm')
+        .post('/conversations')
         .set('Authorization', `Bearer ${token}`)
-        .send({ participantIds: [carolId] });
+        .send({ type: 'dm', contactIds: [carolId] });
 
       expect(res.status).toBe(201);
       expect(res.body.id).toMatch(/^c-/);
@@ -89,9 +89,9 @@ describe('Conversations (e2e)', () => {
       setContacts(app, 'u1', [carolId, daveId]);
 
       const res = await request(app.getHttpServer())
-        .post('/conversations/dm')
+        .post('/conversations')
         .set('Authorization', `Bearer ${token}`)
-        .send({ participantIds: [carolId, daveId] });
+        .send({ type: 'dm', contactIds: [carolId, daveId] });
 
       expect(res.status).toBe(201);
       expect(res.body.title).toBe('Carol Carter, Dave Davis');
@@ -103,15 +103,15 @@ describe('Conversations (e2e)', () => {
       setContacts(app, 'u1', [carolId, daveId]);
 
       const first = await request(app.getHttpServer())
-        .post('/conversations/dm')
+        .post('/conversations')
         .set('Authorization', `Bearer ${token}`)
-        .send({ participantIds: [carolId, daveId] });
+        .send({ type: 'dm', contactIds: [carolId, daveId] });
       expect(first.status).toBe(201);
 
       const second = await request(app.getHttpServer())
-        .post('/conversations/dm')
+        .post('/conversations')
         .set('Authorization', `Bearer ${token}`)
-        .send({ participantIds: [daveId, carolId] });
+        .send({ type: 'dm', contactIds: [daveId, carolId] });
 
       expect(second.status).toBe(200);
       expect(second.body.id).toBe(first.body.id);
@@ -119,9 +119,9 @@ describe('Conversations (e2e)', () => {
 
     it('returns the existing seeded DM rather than duplicating it', async () => {
       const res = await request(app.getHttpServer())
-        .post('/conversations/dm')
+        .post('/conversations')
         .set('Authorization', `Bearer ${token}`)
-        .send({ participantIds: ['u2'] });
+        .send({ type: 'dm', contactIds: ['u2'] });
 
       expect(res.status).toBe(200);
       expect(res.body.id).toBe('c1');
@@ -129,9 +129,9 @@ describe('Conversations (e2e)', () => {
 
     it('returns 404 NOT_FOUND when a participant id does not exist', async () => {
       const res = await request(app.getHttpServer())
-        .post('/conversations/dm')
+        .post('/conversations')
         .set('Authorization', `Bearer ${token}`)
-        .send({ participantIds: ['ghost'] });
+        .send({ type: 'dm', contactIds: ['ghost'] });
 
       expect(res.status).toBe(404);
       expect(res.body.error.code).toBe('NOT_FOUND');
@@ -139,9 +139,9 @@ describe('Conversations (e2e)', () => {
 
     it('returns 400 VALIDATION_ERROR when only the current user resolves', async () => {
       const res = await request(app.getHttpServer())
-        .post('/conversations/dm')
+        .post('/conversations')
         .set('Authorization', `Bearer ${token}`)
-        .send({ participantIds: ['u1'] });
+        .send({ type: 'dm', contactIds: ['u1'] });
 
       expect(res.status).toBe(400);
       expect(res.body.error.code).toBe('VALIDATION_ERROR');
@@ -152,9 +152,9 @@ describe('Conversations (e2e)', () => {
       // Eve is a real user but deliberately not added to Alice's contacts.
 
       const res = await request(app.getHttpServer())
-        .post('/conversations/dm')
+        .post('/conversations')
         .set('Authorization', `Bearer ${token}`)
-        .send({ participantIds: [eveId] });
+        .send({ type: 'dm', contactIds: [eveId] });
 
       expect(res.status).toBe(403);
       expect(res.body.error.code).toBe('FORBIDDEN');
@@ -163,9 +163,9 @@ describe('Conversations (e2e)', () => {
     it('returns 400 VALIDATION_ERROR for too many participants', async () => {
       const tooMany = Array.from({ length: 16 }, (_, i) => `x${i}`);
       const res = await request(app.getHttpServer())
-        .post('/conversations/dm')
+        .post('/conversations')
         .set('Authorization', `Bearer ${token}`)
-        .send({ participantIds: tooMany });
+        .send({ type: 'dm', contactIds: tooMany });
 
       expect(res.status).toBe(400);
       expect(res.body.error.code).toBe('VALIDATION_ERROR');
@@ -173,20 +173,20 @@ describe('Conversations (e2e)', () => {
 
     it('returns 400 VALIDATION_ERROR for an empty participant list', async () => {
       const res = await request(app.getHttpServer())
-        .post('/conversations/dm')
+        .post('/conversations')
         .set('Authorization', `Bearer ${token}`)
-        .send({ participantIds: [] });
+        .send({ type: 'dm', contactIds: [] });
 
       expect(res.status).toBe(400);
       expect(res.body.error.code).toBe('VALIDATION_ERROR');
     });
   });
 
-  describe('POST /conversations/groups', () => {
+  describe('POST /conversations (type: group)', () => {
     it('requires a token', async () => {
       const res = await request(app.getHttpServer())
-        .post('/conversations/groups')
-        .send({ participantIds: ['u2'] });
+        .post('/conversations')
+        .send({ type: 'group', contactIds: ['u2'] });
       expect(res.status).toBe(401);
     });
 
@@ -195,9 +195,9 @@ describe('Conversations (e2e)', () => {
       setContacts(app, 'u1', ['u2', carolId]);
 
       const res = await request(app.getHttpServer())
-        .post('/conversations/groups')
+        .post('/conversations')
         .set('Authorization', `Bearer ${token}`)
-        .send({ participantIds: ['u2', carolId], title: 'Team' });
+        .send({ type: 'group', contactIds: ['u2', carolId], title: 'Team' });
 
       expect(res.status).toBe(201);
       expect(res.body.title).toBe('Team');
@@ -215,9 +215,9 @@ describe('Conversations (e2e)', () => {
       setContacts(app, 'u1', ['u2', carolId]);
 
       const res = await request(app.getHttpServer())
-        .post('/conversations/groups')
+        .post('/conversations')
         .set('Authorization', `Bearer ${token}`)
-        .send({ participantIds: ['u2', carolId] });
+        .send({ type: 'group', contactIds: ['u2', carolId] });
 
       expect(res.status).toBe(201);
       expect(res.body.title).toBe('Bob Brown, Carol Carter');
@@ -225,13 +225,13 @@ describe('Conversations (e2e)', () => {
 
     it('allows multiple groups with the exact same participants', async () => {
       const first = await request(app.getHttpServer())
-        .post('/conversations/groups')
+        .post('/conversations')
         .set('Authorization', `Bearer ${token}`)
-        .send({ participantIds: ['u2'], title: 'One' });
+        .send({ type: 'group', contactIds: ['u2'], title: 'One' });
       const second = await request(app.getHttpServer())
-        .post('/conversations/groups')
+        .post('/conversations')
         .set('Authorization', `Bearer ${token}`)
-        .send({ participantIds: ['u2'], title: 'Two' });
+        .send({ type: 'group', contactIds: ['u2'], title: 'Two' });
 
       expect(first.status).toBe(201);
       expect(second.status).toBe(201);
@@ -241,9 +241,9 @@ describe('Conversations (e2e)', () => {
     it('returns 400 VALIDATION_ERROR for too many participants', async () => {
       const tooMany = Array.from({ length: 31 }, (_, i) => `x${i}`);
       const res = await request(app.getHttpServer())
-        .post('/conversations/groups')
+        .post('/conversations')
         .set('Authorization', `Bearer ${token}`)
-        .send({ participantIds: tooMany });
+        .send({ type: 'group', contactIds: tooMany });
 
       expect(res.status).toBe(400);
       expect(res.body.error.code).toBe('VALIDATION_ERROR');
@@ -253,12 +253,99 @@ describe('Conversations (e2e)', () => {
       const eveId = await signup('Eve', 'Evans');
 
       const res = await request(app.getHttpServer())
-        .post('/conversations/groups')
+        .post('/conversations')
         .set('Authorization', `Bearer ${token}`)
-        .send({ participantIds: ['u2', eveId], title: 'Team' });
+        .send({ type: 'group', contactIds: ['u2', eveId], title: 'Team' });
 
       expect(res.status).toBe(403);
       expect(res.body.error.code).toBe('FORBIDDEN');
+    });
+  });
+
+  describe('POST /conversations (type: assistant)', () => {
+    it('requires a token', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/conversations')
+        .send({ type: 'assistant' });
+      expect(res.status).toBe(401);
+    });
+
+    it('creates an assistant conversation (201) with the caller and the assistant', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/conversations')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ type: 'assistant' });
+
+      expect(res.status).toBe(201);
+      expect(res.body.type).toBe('assistant');
+      expect(res.body.participants).toEqual(
+        expect.arrayContaining([expect.objectContaining({ id: 'u1' })]),
+      );
+    });
+  });
+
+  describe('POST /conversations (type: tutor)', () => {
+    it('requires a token', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/conversations')
+        .send({ type: 'tutor' });
+      expect(res.status).toBe(401);
+    });
+
+    it('creates a tutor conversation (201) with the caller and the tutor', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/conversations')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ type: 'tutor' });
+
+      expect(res.status).toBe(201);
+      expect(res.body.type).toBe('tutor');
+      expect(res.body.title).toBe('RAG Tutor');
+      expect(res.body.participants).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ id: 'u1' }),
+          expect.objectContaining({ id: 'tutor-assistant' }),
+        ]),
+      );
+    });
+
+    it('ignores contactIds for a tutor conversation', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/conversations')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ type: 'tutor', contactIds: ['u2'] });
+
+      expect(res.status).toBe(201);
+      expect(res.body.type).toBe('tutor');
+    });
+  });
+
+  describe('GET /conversations/:id/assistant/stream (tutor)', () => {
+    it('emits a not-implemented event for a tutor conversation', async () => {
+      const created = await request(app.getHttpServer())
+        .post('/conversations')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ type: 'tutor' });
+      const conversationId = created.body.id as string;
+
+      const res = await request(app.getHttpServer())
+        .get(`/conversations/${conversationId}/assistant/stream`)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res.status).toBe(200);
+      expect(res.text).toContain('TUTOR_NOT_IMPLEMENTED');
+    });
+  });
+
+  describe('POST /conversations (invalid type)', () => {
+    it('returns 400 VALIDATION_ERROR for an unsupported type', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/conversations')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ type: 'channel' });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error.code).toBe('VALIDATION_ERROR');
     });
   });
 });
