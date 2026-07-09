@@ -1,4 +1,4 @@
-import type { Message } from '../../shared/entities/Message.types';
+import type { Message, MessageCitation } from '../../shared/entities/Message.types';
 
 /** The only transitions allowed against a conversation's message array. */
 export type MessageThreadAction =
@@ -6,9 +6,16 @@ export type MessageThreadAction =
   | { type: 'ADD_OPTIMISTIC'; message: Message }
   | { type: 'CONFIRM'; tempId: string; message: Message }
   | { type: 'ROLLBACK'; tempId: string }
-  // Streaming assistant reply: grow the in-progress bubble, then stamp its real id.
+  // Streaming AI reply: show a transient progress status, grow the in-progress
+  // bubble, then stamp its real id and (for tutor answers) its citations.
+  | { type: 'SET_ASSISTANT_STATUS'; tempId: string; label: string }
   | { type: 'APPEND_ASSISTANT_DELTA'; tempId: string; delta: string }
-  | { type: 'FINISH_ASSISTANT'; tempId: string; messageId: string };
+  | {
+      type: 'FINISH_ASSISTANT';
+      tempId: string;
+      messageId: string;
+      citations: MessageCitation[];
+    };
 
 export type MessageThreadContextValue = {
   messages: Message[];
@@ -20,8 +27,14 @@ export type MessageThreadContextValue = {
   confirmMessage: (tempId: string, message: Message) => void;
   /** Drop an optimistic message after a failed send. */
   rollbackMessage: (tempId: string) => void;
-  /** Append a streamed token delta to the in-progress assistant message. */
+  /** Show a transient progress status on the in-progress AI message. */
+  setAssistantStatus: (tempId: string, label: string) => void;
+  /** Append a streamed token delta to the in-progress AI message. */
   appendAssistantDelta: (tempId: string, delta: string) => void;
-  /** Stamp the persisted message id once streaming completes. */
-  finishAssistant: (tempId: string, messageId: string) => void;
+  /** Stamp the persisted message id (and any citations) once streaming completes. */
+  finishAssistant: (
+    tempId: string,
+    messageId: string,
+    citations: MessageCitation[],
+  ) => void;
 };

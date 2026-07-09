@@ -1,5 +1,5 @@
 import { useCallback, useReducer } from 'react';
-import type { Message } from '../../shared/entities/Message.types';
+import type { Message, MessageCitation } from '../../shared/entities/Message.types';
 import type { MessageThreadContextValue } from './MessageThread.types';
 import { messageThreadReducer, initialMessageThreadState } from './model/MessageThread.reducer';
 
@@ -25,14 +25,19 @@ export function useMessageThreadController(): MessageThreadContextValue {
     (tempId: string) => dispatch({ type: 'ROLLBACK', tempId }),
     [],
   );
+  const setAssistantStatus = useCallback(
+    (tempId: string, label: string) =>
+      dispatch({ type: 'SET_ASSISTANT_STATUS', tempId, label }),
+    [],
+  );
   const appendAssistantDelta = useCallback(
     (tempId: string, delta: string) =>
       dispatch({ type: 'APPEND_ASSISTANT_DELTA', tempId, delta }),
     [],
   );
   const finishAssistant = useCallback(
-    (tempId: string, messageId: string) =>
-      dispatch({ type: 'FINISH_ASSISTANT', tempId, messageId }),
+    (tempId: string, messageId: string, citations: MessageCitation[]) =>
+      dispatch({ type: 'FINISH_ASSISTANT', tempId, messageId, citations }),
     [],
   );
 
@@ -42,6 +47,7 @@ export function useMessageThreadController(): MessageThreadContextValue {
     addOptimisticMessage,
     confirmMessage,
     rollbackMessage,
+    setAssistantStatus,
     appendAssistantDelta,
     finishAssistant,
   };

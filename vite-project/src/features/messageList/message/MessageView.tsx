@@ -4,6 +4,7 @@ import { MessageAvatar } from './children/MessageAvatar';
 import { MessageSenderName } from './children/MessageSenderName';
 import { MessageBubble } from './children/MessageBubble';
 import { MessageCitations } from './children/messageCitations/MessageCitations';
+import { MessagePendingStatus } from './children/MessagePendingStatus';
 import { MessageUploadCard } from './children/MessageUploadCard';
 import { MessageTime } from './children/MessageTime';
 
@@ -22,6 +23,7 @@ export function MessageView(): React.JSX.Element {
         ) : (
           <>
             <MessageBubble />
+            <MessagePendingStatus />
             <MessageCitations />
           </>
         )}

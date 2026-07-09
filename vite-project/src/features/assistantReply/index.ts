@@ -1,1 +1,1 @@
-export { useAssistantReply } from './useAssistantReply';
+export { useAiReply } from './useAiReply';
