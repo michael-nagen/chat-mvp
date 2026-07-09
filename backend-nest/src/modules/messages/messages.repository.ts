@@ -12,6 +12,13 @@ export abstract class MessagesRepository {
     limit: number;
   }): Promise<Message[]>;
 
+  // The most recent messages in one conversation, newest → oldest, capped at
+  // `limit`. Bounded read for assistant context preparation (never a full scan).
+  abstract findRecent(params: {
+    conversationId: string;
+    limit: number;
+  }): Promise<Message[]>;
+
   // Content search across the given conversations, newest → oldest.
   abstract matchContent(params: {
     conversationIds: Set<string>;

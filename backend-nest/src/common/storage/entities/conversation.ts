@@ -1,4 +1,4 @@
-export type ConversationType = 'dm' | 'group';
+export type ConversationType = 'dm' | 'group' | 'assistant';
 
 export interface Conversation {
   id: string;
@@ -7,7 +7,5 @@ export interface Conversation {
   updatedAt: string;
   participantIds: string[];
   type: ConversationType;
-  // Normalized "one DM per pair" key (sorted participant ids joined). Present
-  // only on DMs; a partial unique index enforces uniqueness over it.
-  dmKey?: string;
+  conversationKey: string;
 }

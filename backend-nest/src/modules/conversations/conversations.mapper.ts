@@ -9,6 +9,7 @@ export const toConversationResponse = (
   participants: UserSummary[],
 ): ConversationResponse => ({
   id: conversation.id,
+  type: conversation.type,
   title: conversation.title,
   lastMessage: conversation.lastMessage,
   updatedAt: conversation.updatedAt,

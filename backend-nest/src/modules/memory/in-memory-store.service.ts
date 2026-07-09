@@ -20,7 +20,7 @@ export class InMemoryStoreService {
       lastMessage: 'See you tomorrow!',
       updatedAt: '2026-06-04T08:30:00.000Z',
       type: 'dm',
-      dmKey: 'u1:u2',
+      conversationKey: 'dm:u1:u2',
     },
     {
       id: 'c2',
@@ -29,6 +29,7 @@ export class InMemoryStoreService {
       lastMessage: 'Sounds good.',
       updatedAt: '2026-06-03T17:45:00.000Z',
       type: 'group',
+      conversationKey: 'group:u1:u2',
     },
   ];
 

@@ -10,7 +10,7 @@ export function setTokenProvider(fn: () => string | null): void {
   getToken = fn;
 }
 
-function extractErrorMessage(body: unknown, fallback: string): string {
+export function extractErrorMessage(body: unknown, fallback: string): string {
   if (body && typeof body === 'object' && 'error' in body) {
     const error = (body as { error: unknown }).error;
     if (error && typeof error === 'object' && 'message' in error) {
@@ -61,3 +61,9 @@ export const put = <T>(path: string, body?: unknown, options?: HelperOptions): P
 
 export const del = <T>(path: string, options?: HelperOptions): Promise<T> =>
   request<T>(path, { ...options, method: 'DELETE' });
+
+// ── Transport accessors ──────────────────────────────────────────────────────
+
+export const apiUrl = (path: string): string => `${BASE_URL}${path}`;
+
+export const getAuthToken = (): string | null => getToken();

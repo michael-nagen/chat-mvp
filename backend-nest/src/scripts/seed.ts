@@ -9,7 +9,7 @@ import {
   ConversationSchema,
 } from '../modules/conversations/storage/conversations.schema';
 import { MessageDoc, MessageSchema } from '../modules/messages/storage/messages.schema';
-import { toDmKey } from '../modules/conversations/dm-key';
+import { toConversationKey } from '../modules/conversations/conversation-key';
 
 // Standalone, idempotent seed. Upserts fixtures by stable _id, so re-running
 // never duplicates and never wipes real data. Not run on boot (data must
@@ -68,9 +68,9 @@ export async function seed(): Promise<void> {
 
   const lastBig = messages[messages.length - 1];
   const conversations = [
-    { _id: 'c1', participantIds: ['u1', 'u2'], type: 'dm', dmKey: toDmKey(['u1', 'u2']), title: 'Alice & Bob', lastMessage: 'See you tomorrow!', lastMessageAt: at(30), createdAt: at(0) },
-    { _id: 'c2', participantIds: ['u1', 'u2'], type: 'group', title: 'Project chat', lastMessage: 'Sounds good.', lastMessageAt: new Date('2026-06-03T17:45:00.000Z'), createdAt: new Date('2026-06-03T17:00:00.000Z') },
-    { _id: BIG_THREAD_ID, participantIds: ['u1', 'u2'], type: 'group', title: 'Big thread', lastMessage: lastBig.content, lastMessageAt: lastBig.createdAt, createdAt: at(100) },
+    { _id: 'c1', participantIds: ['u1', 'u2'], type: 'dm', conversationKey: toConversationKey({ type: 'dm', participantIds: ['u1', 'u2'] }), title: 'Alice & Bob', lastMessage: 'See you tomorrow!', lastMessageAt: at(30), createdAt: at(0) },
+    { _id: 'c2', participantIds: ['u1', 'u2'], type: 'group', conversationKey: toConversationKey({ type: 'group', participantIds: ['u1', 'u2'] }), title: 'Project chat', lastMessage: 'Sounds good.', lastMessageAt: new Date('2026-06-03T17:45:00.000Z'), createdAt: new Date('2026-06-03T17:00:00.000Z') },
+    { _id: BIG_THREAD_ID, participantIds: ['u1', 'u2'], type: 'group', conversationKey: toConversationKey({ type: 'group', participantIds: ['u1', 'u2'] }), title: 'Big thread', lastMessage: lastBig.content, lastMessageAt: lastBig.createdAt, createdAt: at(100) },
   ];
 
   // A DM between Alice (u1) and each extra user, with one opening message.
@@ -83,7 +83,7 @@ export async function seed(): Promise<void> {
       _id: conversationId,
       participantIds: ['u1', uid],
       type: 'dm',
-      dmKey: toDmKey(['u1', uid]),
+      conversationKey: toConversationKey({ type: 'dm', participantIds: ['u1', uid] }),
       title: `Alice & ${profile.firstName}`,
       lastMessage: content,
       lastMessageAt: when,

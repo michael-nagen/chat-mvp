@@ -35,8 +35,10 @@ export class MongoConversationsRepository extends ConversationsRepository {
     return docs.map((doc) => this.toEntity(doc));
   }
 
-  async findByDmKey(dmKey: string): Promise<Conversation | undefined> {
-    const doc = await this.model.findOne({ dmKey }).lean().exec();
+  async findByConversationKey(
+    conversationKey: string,
+  ): Promise<Conversation | undefined> {
+    const doc = await this.model.findOne({ conversationKey }).lean().exec();
     return doc ? this.toEntity(doc) : undefined;
   }
 
@@ -46,15 +48,15 @@ export class MongoConversationsRepository extends ConversationsRepository {
         _id: conversation.id,
         participantIds: conversation.participantIds,
         type: conversation.type,
-        dmKey: conversation.dmKey,
+        conversationKey: conversation.conversationKey,
         title: conversation.title,
         lastMessage: conversation.lastMessage,
         lastMessageAt: new Date(conversation.updatedAt),
         createdAt: new Date(conversation.updatedAt),
       });
     } catch (error) {
-      // Concurrent creates race past the service-level pre-check; the unique
-      // `dmKey` index is what actually rejects the loser (E11000).
+      // Concurrent creates race past the service-level pre-check; the DM
+      // uniqueness index is what actually rejects the loser (E11000).
       if (isDuplicateKeyError(error)) {
         throw new ConflictException('Conversation already exists.');
       }
@@ -99,7 +101,7 @@ export class MongoConversationsRepository extends ConversationsRepository {
       updatedAt: doc.lastMessageAt.toISOString(),
       participantIds: doc.participantIds,
       type: doc.type,
-      dmKey: doc.dmKey,
+      conversationKey: doc.conversationKey,
     };
   }
 }

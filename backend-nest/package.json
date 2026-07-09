@@ -11,6 +11,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "seed": "ts-node src/scripts/seed.ts",
     "verify:s3": "ts-node src/scripts/verify-s3.ts",
+    "verify:assistant": "ts-node src/scripts/verify-assistant.ts",
+    "eval": "ts-node src/eval/run-eval.ts",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage"
@@ -28,12 +30,15 @@
     "bcrypt": "^6.0.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
+    "gpt-tokenizer": "^3.4.0",
     "ioredis": "^5.11.1",
     "mongoose": "^8.24.0",
+    "openai": "^6.45.0",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.0",

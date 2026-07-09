@@ -1,27 +1,25 @@
 import { useNewConversation } from '../NewConversation.context';
 import { newConversationStrings } from '../NewConversation.strings';
 import { newConversationStyles } from '../NewConversation.styles';
+import type { ConversationMode } from '../NewConversation.types';
 
-/** Segmented DM | Group selector; the active mode is filled. */
+const MODES: ConversationMode[] = ['dm', 'group', 'assistant'];
+
 export function ModeToggle(): React.JSX.Element {
   const { mode, setMode } = useNewConversation();
 
   return (
     <div style={newConversationStyles.segmentGroup}>
-      <button
-        type="button"
-        onClick={() => setMode('dm')}
-        style={newConversationStyles.segment(mode === 'dm')}
-      >
-        {newConversationStrings.modes.dm}
-      </button>
-      <button
-        type="button"
-        onClick={() => setMode('group')}
-        style={newConversationStyles.segment(mode === 'group')}
-      >
-        {newConversationStrings.modes.group}
-      </button>
+      {MODES.map((option) => (
+        <button
+          key={option}
+          type="button"
+          onClick={() => setMode(option)}
+          style={newConversationStyles.segment(mode === option)}
+        >
+          {newConversationStrings.modes[option]}
+        </button>
+      ))}
     </div>
   );
 }
