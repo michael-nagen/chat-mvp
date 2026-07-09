@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto';
 import { Injectable } from '@nestjs/common';
 import { MessagesRepository } from './messages.repository';
-import { Message } from '../../common/storage/entities';
+import { Message, MessageMetadata } from '../../common/storage/entities';
 import { MessagePage } from './messages.types';
 import { encodeCursor } from './messages.cursor';
 import { TxContext } from '../../common/storage/unit-of-work';
@@ -43,10 +43,13 @@ export class MessagesService {
       conversationId,
       userId,
       content,
+      metadata,
     }: {
       conversationId: string;
       userId: string;
       content: string;
+      // Optional extra data (e.g. tutor citations); omitted for normal messages.
+      metadata?: MessageMetadata;
     },
     tx?: TxContext,
   ): Promise<Message> {
@@ -56,6 +59,7 @@ export class MessagesService {
       senderId: userId,
       content,
       createdAt: new Date().toISOString(),
+      ...(metadata ? { metadata } : {}),
     };
     return this.repo.insert(message, tx);
   }

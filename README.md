@@ -103,6 +103,23 @@ service directly. Anything thrown lands in one `errorHandler` that returns
 `{ error: { code, message } }`. See [backend/README.md](backend/README.md) for the full layering
 and error model.
 
+### Databases
+
+The backend uses two separate MongoDB connections, selected per entity:
+
+- **Main app data** — users, conversations, messages, and auth — lives on the
+  default connection configured by `MONGO_URI`.
+- **Knowledge/RAG data** — `knowledge_documents` and `knowledge_chunks` — lives
+  on its own dedicated connection configured by `KNOWLEDGE_MONGO_URI`. Point this
+  at MongoDB Atlas: Part 5 adds Atlas Vector Search, which is needed only for the
+  knowledge chunks, and keeping documents + chunks together keeps the domain
+  cohesive. When `KNOWLEDGE_MONGO_URI` is unset, the Knowledge domain falls back
+  to `MONGO_URI` so local dev still works.
+
+Never commit real credentials — paste your Atlas URI into `.env` (gitignored);
+`.env.example` only holds placeholders. Both connections are skipped entirely
+when `STORAGE_DRIVER=memory` (used by the test suite), so tests need no database.
+
 ### Calling convention
 
 Functions and methods that take more than one argument receive a single **named-parameter

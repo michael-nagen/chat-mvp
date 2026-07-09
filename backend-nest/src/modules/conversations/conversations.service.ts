@@ -73,6 +73,24 @@ createAssistant({
     );
   }
 
+  createTutor({
+    userId,
+    title,
+    assistantId,
+  }: {
+    userId: string;
+    title: string;
+    assistantId: string;
+  }): Promise<Conversation> {
+    return this.repo.insert(
+      this.build({
+        participantIds: [userId, assistantId],
+        title,
+        type: 'tutor',
+      }),
+    );
+  }
+
   private build({
     participantIds,
     title,

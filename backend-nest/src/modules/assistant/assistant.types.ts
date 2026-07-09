@@ -1,4 +1,4 @@
-export type AssistantId = 'general-assistant';
+export type AssistantId = 'general-assistant' | 'tutor-assistant';
 
 export interface AssistantDefinition {
   id: AssistantId;

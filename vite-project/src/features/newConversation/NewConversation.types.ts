@@ -1,4 +1,11 @@
-export type ConversationMode = 'dm' | 'group' | 'assistant';
+export type ConversationMode = 'dm' | 'group' | 'assistant' | 'tutor';
+
+// Discriminated request body for the unified POST /conversations endpoint.
+export type CreateConversationRequest =
+  | { type: 'dm'; contactIds: string[] }
+  | { type: 'group'; contactIds: string[]; title: string }
+  | { type: 'assistant' }
+  | { type: 'tutor' };
 export type NewConversationStep = 'selectParticipants' | 'groupTitle';
 
 export type NewConversationState = {

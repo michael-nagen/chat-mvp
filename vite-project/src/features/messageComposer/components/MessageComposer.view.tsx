@@ -2,6 +2,7 @@ import type { MessageComposerViewProps } from '../MessageComposer.types';
 import { messageComposerStyles } from './MessageComposer.styles';
 import { MessageComposerTextarea } from './MessageComposerTextarea';
 import { MessageComposerSendButton } from './MessageComposerSendButton';
+import { KnowledgeUploadSlot } from '../../knowledgeUpload';
 
 /** Composes the draft textarea and send button into the composer form. */
 export function MessageComposerView({
@@ -20,6 +21,7 @@ export function MessageComposerView({
         onKeyDown={handleKeyDown}
         isSending={isSending}
       />
+      <KnowledgeUploadSlot />
       <MessageComposerSendButton sendable={sendable} isSending={isSending} />
     </form>
   );

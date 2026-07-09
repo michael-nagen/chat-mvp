@@ -54,4 +54,63 @@ export const messageStyles = {
     width,
     height: '32px',
   }),
+  // "Sources" block shown under a tutor answer that carries citations.
+  citations: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '2px',
+    marginTop: '4px',
+    padding: '0 4px',
+  } as React.CSSProperties,
+  citationsTitle: {
+    fontSize: '10px',
+    fontWeight: 600,
+    color: colors.textMuted,
+  } as React.CSSProperties,
+  citationItem: {
+    fontSize: '11px',
+    color: colors.textMuted,
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '2px',
+  } as React.CSSProperties,
+  citationShowSource: {
+    alignSelf: 'flex-start',
+    padding: 0,
+    border: 'none',
+    background: 'transparent',
+    color: colors.primary,
+    cursor: 'pointer',
+    fontSize: '11px',
+  } as React.CSSProperties,
+  citationSourceText: {
+    fontSize: '11px',
+    color: colors.text,
+    background: colors.assistantBubble,
+    borderRadius: '4px',
+    padding: '4px 6px',
+    whiteSpace: 'pre-wrap' as const,
+  } as React.CSSProperties,
+  uploadCard: {
+    border: `1px solid ${colors.border}`,
+    borderRadius: '8px',
+    padding: '8px 12px',
+    background: colors.surface,
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '2px',
+  } as React.CSSProperties,
+  uploadCardTitle: {
+    fontSize: '11px',
+    fontWeight: 600,
+    color: colors.textMuted,
+  } as React.CSSProperties,
+  uploadCardName: {
+    fontSize: '14px',
+    color: colors.text,
+  } as React.CSSProperties,
+  uploadCardHint: {
+    fontSize: '11px',
+    color: colors.textMuted,
+  } as React.CSSProperties,
 };

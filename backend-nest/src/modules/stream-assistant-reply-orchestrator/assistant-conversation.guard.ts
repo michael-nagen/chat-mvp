@@ -2,6 +2,7 @@ import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Request } from 'express';
 import { ConversationsService } from '../conversations/conversations.service';
 import { AuthUser } from '../auth/current-user.decorator';
+import { isAiConversationType } from '../../common/storage/entities';
 import {
   ConversationNotFoundException,
   ForbiddenException,
@@ -31,9 +32,10 @@ export class AssistantConversationGuard implements CanActivate {
         'You are not a participant in this conversation.',
       );
     }
-    if (conversation.type !== 'assistant') {
+    
+    if (!isAiConversationType(conversation.type)) {
       throw new ValidationException(
-        'This conversation is not an assistant conversation.',
+        'This conversation is not an AI conversation.',
       );
     }
     return true;

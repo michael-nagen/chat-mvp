@@ -6,6 +6,7 @@ import {
   CONVERSATIONS_DRIVER,
 } from '../conversations/conversations.module';
 import { unitOfWorkProvider } from '../../common/storage/storage.config';
+import { RagTutorModule } from '../rag-tutor/rag-tutor.module';
 import { SendMessageOrchestrator } from './send-message.orchestrator';
 
 export interface SendMessageInput {
@@ -19,7 +20,7 @@ export interface SendMessageOutput {
 }
 
 @Module({
-  imports: [MessagesModule, ConversationsModule],
+  imports: [MessagesModule, ConversationsModule, RagTutorModule],
   providers: [
     SendMessageOrchestrator,
     unitOfWorkProvider([MESSAGES_DRIVER, CONVERSATIONS_DRIVER]),

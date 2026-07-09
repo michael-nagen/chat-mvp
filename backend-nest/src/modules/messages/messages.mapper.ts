@@ -1,13 +1,15 @@
 import { Message } from '../../common/storage/entities';
 import { MessagePageResponse, MessageResponse } from './messages.types';
 
-// createdAt is exposed to the FE as timestamp.
+// createdAt is exposed to the FE as timestamp. metadata (e.g. tutor citations)
+// is included only when present, so normal messages keep their existing shape.
 export const toMessageResponse = (message: Message): MessageResponse => ({
   id: message.id,
   conversationId: message.conversationId,
   senderId: message.senderId,
   content: message.content,
   timestamp: message.createdAt,
+  ...(message.metadata ? { metadata: message.metadata } : {}),
 });
 
 export const toMessagePageResponse = (

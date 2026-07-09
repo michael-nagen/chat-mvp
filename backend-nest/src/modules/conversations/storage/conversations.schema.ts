@@ -11,8 +11,12 @@ export class ConversationDoc {
   @Prop({ type: [String], required: true })
   participantIds!: string[];
 
-  @Prop({ type: String, required: true, enum: ['dm', 'group', 'assistant'] })
-  type!: 'dm' | 'group' | 'assistant';
+  @Prop({
+    type: String,
+    required: true,
+    enum: ['dm', 'group', 'assistant', 'tutor'],
+  })
+  type!: 'dm' | 'group' | 'assistant' | 'tutor';
 
   @Prop({ type: String, required: true })
   conversationKey!: string;

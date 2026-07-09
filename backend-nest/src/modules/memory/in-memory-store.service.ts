@@ -1,5 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { Conversation, Message, User } from '../../common/storage/entities';
+import {
+  Conversation,
+  KnowledgeChunk,
+  KnowledgeDocument,
+  Message,
+  User,
+} from '../../common/storage/entities';
 
 // Process-local seed data shared by every feature module's repository.
 // Mirrors the Express backend's shared/store/inMemoryStore.
@@ -56,4 +62,10 @@ export class InMemoryStoreService {
       createdAt: '2026-06-04T08:30:00.000Z',
     },
   ];
+
+  // No seed data: knowledge documents are created entirely at runtime by users.
+  readonly knowledgeDocuments: KnowledgeDocument[] = [];
+
+  // No seed data: chunks are derived from uploaded documents at runtime.
+  readonly knowledgeChunks: KnowledgeChunk[] = [];
 }
