@@ -6,8 +6,13 @@ import {
   ForbiddenException,
 } from '../../common/errors/app.exception';
 import { UnitOfWork } from '../../common/storage/unit-of-work';
+import type { ConversationType } from '../../common/storage/entities';
 import { toMessageResponse } from '../messages/messages.mapper';
-import type { SendMessageInput, SendMessageOutput } from './send-message.module';
+import type {
+  SendMessageAiReply,
+  SendMessageInput,
+  SendMessageOutput,
+} from './send-message.module';
 
 @Injectable()
 export class SendMessageOrchestrator {
@@ -49,6 +54,16 @@ export class SendMessageOrchestrator {
       return created;
     });
 
-    return { message: toMessageResponse(message) };
+    return { message: toMessageResponse(message), aiReply: this.aiReplyFor(conversation.type) };
+  }
+
+  // The one place that decides, from conversation type, whether an AI reply
+  // should follow. dm/group get none; assistant/tutor signal the caller to start
+  // the AI stream (which owns the actual generation + persistence).
+  private aiReplyFor(type: ConversationType): SendMessageAiReply {
+    if (type === 'assistant' || type === 'tutor') {
+      return { required: true, conversationType: type };
+    }
+    return { required: false };
   }
 }

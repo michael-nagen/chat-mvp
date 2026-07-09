@@ -47,12 +47,10 @@ export function useMessageComposer(): MessageComposerViewProps {
         showToast(result.error);
         return;
       }
-      // Assistant and tutor replies both stream; dm/group have no AI reply.
-      const streamsAiReply =
-        selectedConversation?.type === 'assistant' ||
-        selectedConversation?.type === 'tutor';
-      if (streamsAiReply) {
-        const aiSenderId = selectedConversation.participants.find(
+      // The backend owns the routing decision; the composer just obeys it
+      // instead of re-deriving stream-or-not from the conversation type.
+      if (result.aiReply.required) {
+        const aiSenderId = selectedConversation?.participants.find(
           (p) => p.id !== user?.id,
         )?.id;
         if (!aiSenderId) {

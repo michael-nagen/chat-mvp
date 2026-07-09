@@ -62,7 +62,7 @@ describe('SendMessageOrchestrator', () => {
   // Tutor replies now stream (and persist) via the AI stream path, so the POST
   // that stores the question must never also create a tutor reply — that would
   // double-persist the answer.
-  it('persists only the user message for a tutor conversation (no reply)', async () => {
+  it('persists only the user message for a tutor conversation and requires an AI stream', async () => {
     const { orchestrator, messages } = createOrchestrator({
       conversation: {
         id: 'c-1',
@@ -81,9 +81,29 @@ describe('SendMessageOrchestrator', () => {
     expect(messages.created[0].userId).toBe('u-1');
     expect(messages.created.some((m) => m.userId === TUTOR_ASSISTANT_ID)).toBe(false);
     expect(result.message.content).toBe('What is RAG?');
+    expect(result.aiReply).toEqual({ required: true, conversationType: 'tutor' });
   });
 
-  it('persists only the user message for a non-tutor conversation', async () => {
+  it('requires an AI stream for an assistant conversation', async () => {
+    const { orchestrator, messages } = createOrchestrator({
+      conversation: {
+        id: 'c-1',
+        type: 'assistant',
+        participantIds: ['u-1', 'general-assistant'],
+      },
+    });
+
+    const result = await orchestrator.execute({
+      conversationId: 'c-1',
+      userId: 'u-1',
+      content: 'hello',
+    });
+
+    expect(messages.created).toHaveLength(1);
+    expect(result.aiReply).toEqual({ required: true, conversationType: 'assistant' });
+  });
+
+  it('requires no AI stream for a dm conversation', async () => {
     const { orchestrator, messages } = createOrchestrator({
       conversation: {
         id: 'c-1',
@@ -92,7 +112,7 @@ describe('SendMessageOrchestrator', () => {
       },
     });
 
-    await orchestrator.execute({
+    const result = await orchestrator.execute({
       conversationId: 'c-1',
       userId: 'u-1',
       content: 'hi',
@@ -100,5 +120,24 @@ describe('SendMessageOrchestrator', () => {
 
     expect(messages.created).toHaveLength(1);
     expect(messages.created.every((m) => m.userId === 'u-1')).toBe(true);
+    expect(result.aiReply).toEqual({ required: false });
+  });
+
+  it('requires no AI stream for a group conversation', async () => {
+    const { orchestrator } = createOrchestrator({
+      conversation: {
+        id: 'c-1',
+        type: 'group',
+        participantIds: ['u-1', 'u-2', 'u-3'],
+      },
+    });
+
+    const result = await orchestrator.execute({
+      conversationId: 'c-1',
+      userId: 'u-1',
+      content: 'hi all',
+    });
+
+    expect(result.aiReply).toEqual({ required: false });
   });
 });

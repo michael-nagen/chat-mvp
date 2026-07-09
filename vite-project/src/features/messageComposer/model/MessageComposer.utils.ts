@@ -1,5 +1,5 @@
 import type { Message } from '../../../shared/entities/Message.types';
-import { sendUserMessage } from './MessageComposer.api';
+import { sendUserMessage, type AiReplyDecision } from './MessageComposer.api';
 import { toMessage } from '../../../shared/entities/Message.mapper';
 
 type ThreadActions = {
@@ -8,7 +8,9 @@ type ThreadActions = {
   rollbackMessage: (tempId: string) => void;
 };
 
-export type SendResult = { ok: true } | { ok: false; error: string };
+export type SendResult =
+  | { ok: true; aiReply: AiReplyDecision }
+  | { ok: false; error: string };
 
 /** Runs the optimistic send: add temp message, post, then confirm or roll back. */
 export async function sendOptimisticMessage({
@@ -27,7 +29,7 @@ export async function sendOptimisticMessage({
   try {
     const res = await sendUserMessage({ conversationId, content });
     thread.confirmMessage(optimistic.id, toMessage({ raw: res.message, currentUserId: userId }));
-    return { ok: true };
+    return { ok: true, aiReply: res.aiReply };
   } catch (err) {
     thread.rollbackMessage(optimistic.id);
     return { ok: false, error: err instanceof Error ? err.message : 'Failed to send message' };
