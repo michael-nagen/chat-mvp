@@ -1,7 +1,7 @@
 import type { RagTutorCitation, RetrievedKnowledgeChunk } from './rag-tutor.types';
 
-// Grounding policy shared by the RAG tutor service and the tutor LangGraph so
-// the threshold/citation rules have a single owner. Retrieval may not enforce
+// Grounding policy for the tutor LangGraph (and eval helpers) so the
+// threshold/citation rules have a single owner. Retrieval may not enforce
 // minScore, so callers re-apply it here.
 export const selectStrongChunks = (
   chunks: RetrievedKnowledgeChunk[],

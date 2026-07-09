@@ -5,12 +5,12 @@ import { join } from 'path';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '../../app.module';
 import { KnowledgeRetrievalService } from '../../modules/rag-tutor/retrieval/knowledge-retrieval.service';
-import { RagTutorService } from '../../modules/rag-tutor/rag-tutor.service';
 import { UploadKnowledgeDocumentOrchestrator } from '../../modules/upload-knowledge-document-orchestrator/upload-knowledge-document.orchestrator';
 import { UploadedFileLike } from '../../modules/knowledge-documents/knowledge-document.types';
 import { RAG_EVAL_CASES } from './rag-eval-cases';
 import { evaluateRetrieval, printRetrievalReport } from './retrieval-eval';
 import { evaluateAnswer, printAnswerReport } from './answer-eval';
+import { makeEvalTutorAnswerFn } from './tutor-graph-eval';
 
 // Loose early-stage thresholds (see task spec).
 const MIN_HIT_RATE = 0.7;
@@ -63,7 +63,7 @@ async function main(): Promise<void> {
     );
 
     const retrieval = app.get(KnowledgeRetrievalService, { strict: false });
-    const tutor = app.get(RagTutorService, { strict: false });
+    const answerQuestion = makeEvalTutorAnswerFn(app);
 
     const retrievalReport = await evaluateRetrieval({
       retrieval,
@@ -73,7 +73,7 @@ async function main(): Promise<void> {
     printRetrievalReport(retrievalReport);
 
     const answerReport = await evaluateAnswer({
-      tutor,
+      answerQuestion,
       userId: EVAL_USER_ID,
       cases: RAG_EVAL_CASES,
     });

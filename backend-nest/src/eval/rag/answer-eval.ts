@@ -1,5 +1,5 @@
-import { RagTutorService } from '../../modules/rag-tutor/rag-tutor.service';
 import { RagEvalCase } from './rag-eval-cases';
+import type { TutorAnswerFn } from './tutor-graph-eval';
 
 const FALLBACK_MARKER = 'could not find relevant information';
 
@@ -25,11 +25,11 @@ const includesCI = (haystack: string, needle: string): boolean =>
 // Evaluates answer quality: keyword coverage + citation presence for positive
 // cases, and fallback correctness for unknown cases (no source hints).
 export async function evaluateAnswer({
-  tutor,
+  answerQuestion,
   userId,
   cases,
 }: {
-  tutor: RagTutorService;
+  answerQuestion: TutorAnswerFn;
   userId: string;
   cases: RagEvalCase[];
 }): Promise<AnswerReport> {
@@ -37,7 +37,7 @@ export async function evaluateAnswer({
 
   for (const testCase of cases) {
     const isFallbackCase = (testCase.expectedSourceHints ?? []).length === 0;
-    const { answer, citations } = await tutor.answerQuestion({
+    const { answer, citations } = await answerQuestion({
       userId,
       question: testCase.question,
     });
