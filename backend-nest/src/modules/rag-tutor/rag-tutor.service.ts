@@ -9,12 +9,8 @@ import {
   RAG_TUTOR_MIN_SCORE_TOKEN,
   RAG_TUTOR_TOP_K,
 } from './config/rag-tutor.constants';
-import type {
-  AnswerTutorQuestionInput,
-  RagTutorAnswer,
-  RagTutorCitation,
-  RetrievedKnowledgeChunk,
-} from './rag-tutor.types';
+import { selectStrongChunks, toRagTutorCitation } from './rag-tutor.grounding';
+import type { AnswerTutorQuestionInput, RagTutorAnswer } from './rag-tutor.types';
 
 // Orchestrates the grounded tutor answer: retrieve → keep strong chunks →
 // fallback if none → otherwise generate from cited context. Depends only on the
@@ -40,8 +36,7 @@ export class RagTutorService {
       minScore: this.minScore,
     });
 
-    // Defensively re-apply the threshold: retrieval may not enforce minScore.
-    const strong = retrieved.filter((chunk) => chunk.score >= this.minScore);
+    const strong = selectStrongChunks(retrieved, this.minScore);
 
     if (strong.length === 0) {
       return { answer: RAG_TUTOR_FALLBACK_ANSWER, citations: [] };
@@ -52,16 +47,6 @@ export class RagTutorService {
       context: formatKnowledgeContext(strong),
     });
 
-    return { answer, citations: strong.map(toCitation) };
+    return { answer, citations: strong.map(toRagTutorCitation) };
   }
 }
-
-// For now, every strong chunk provided as context is returned as a citation —
-// as a reference (chunkId + doc info + score), never the text.
-const toCitation = (chunk: RetrievedKnowledgeChunk): RagTutorCitation => ({
-  chunkId: chunk.chunkId,
-  documentId: chunk.documentId,
-  documentName: chunk.documentName,
-  chunkIndex: chunk.chunkIndex,
-  score: chunk.score,
-});

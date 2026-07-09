@@ -80,6 +80,11 @@ export function selectTutorAnswerGenerator(
       useFactory: selectTutorAnswerGenerator,
     },
   ],
-  exports: [RagTutorService, KnowledgeRetrievalService],
+  exports: [
+    RagTutorService,
+    KnowledgeRetrievalService,
+    TutorAnswerGenerator,
+    RAG_TUTOR_MIN_SCORE_TOKEN,
+  ],
 })
 export class RagTutorModule {}

@@ -10,6 +10,7 @@ import { MESSAGES_DRIVER } from './modules/messages/messages.module';
 import { KNOWLEDGE_DRIVER } from './modules/knowledge-documents/knowledge-documents.module';
 import { KNOWLEDGE_CHUNKS_DRIVER } from './modules/knowledge-chunks/knowledge-chunks.module';
 import { KnowledgeMongoConnectionModule } from './modules/knowledge-storage/knowledge-mongo-connection.module';
+import { AgentModule } from './modules/agent/agent.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { KnowledgeMongoConnectionModule } from './modules/knowledge-storage/know
     ]),
     CommonModule,
     ControllersModule,
+    AgentModule,
   ],
   controllers: [AppController],
 })

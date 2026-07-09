@@ -1,8 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AssistantContextModule } from '../assistant-context/assistant-context.module';
 import { AssistantModule } from '../assistant/assistant.module';
-import { AssistantToolsModule } from '../assistant-tools/assistant-tools.module';
-import { AiProviderModule } from '../ai-provider/ai-provider.module';
+import { AgentModule } from '../agent/agent.module';
 import { MessagesModule, MESSAGES_DRIVER } from '../messages/messages.module';
 import {
   ConversationsModule,
@@ -22,8 +21,7 @@ export interface StreamAssistantReplyInput {
   imports: [
     AssistantContextModule,
     AssistantModule,
-    AssistantToolsModule,
-    AiProviderModule,
+    AgentModule,
     MessagesModule,
     ConversationsModule,
   ],
