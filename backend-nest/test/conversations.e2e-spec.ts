@@ -321,19 +321,25 @@ describe('Conversations (e2e)', () => {
   });
 
   describe('GET /conversations/:id/assistant/stream (tutor)', () => {
-    it('emits a not-implemented event for a tutor conversation', async () => {
+    it('streams a tutor reply (no longer not-implemented) and ends with done', async () => {
       const created = await request(app.getHttpServer())
         .post('/conversations')
         .set('Authorization', `Bearer ${token}`)
         .send({ type: 'tutor' });
       const conversationId = created.body.id as string;
 
+      await request(app.getHttpServer())
+        .post(`/conversations/${conversationId}/messages`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ content: 'What is RAG?' });
+
       const res = await request(app.getHttpServer())
         .get(`/conversations/${conversationId}/assistant/stream`)
         .set('Authorization', `Bearer ${token}`);
 
       expect(res.status).toBe(200);
-      expect(res.text).toContain('TUTOR_NOT_IMPLEMENTED');
+      expect(res.text).not.toContain('TUTOR_NOT_IMPLEMENTED');
+      expect(res.text).toContain('event: done');
     });
   });
 
