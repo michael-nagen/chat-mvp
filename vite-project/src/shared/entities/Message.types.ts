@@ -29,6 +29,9 @@ export type Message = {
   senderId: string;
   timestamp: string;
   metadata?: MessageMetadata;
+  // Transient status shown while an AI reply is being generated (e.g.
+  // "Searching your documents…"). Cleared once tokens arrive and never persisted.
+  pendingStatus?: string;
 };
 
 // Wire shape from the backend: senderId is the raw author id, mapped to a caller-relative sender.

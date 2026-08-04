@@ -16,13 +16,30 @@ export function messageThreadReducer(
       return state.map((m) => (m.id === action.tempId ? action.message : m));
     case 'ROLLBACK':
       return state.filter((m) => m.id !== action.tempId);
-    case 'APPEND_ASSISTANT_DELTA':
+    case 'SET_ASSISTANT_STATUS':
       return state.map((m) =>
-        m.id === action.tempId ? { ...m, content: m.content + action.delta } : m,
+        m.id === action.tempId ? { ...m, pendingStatus: action.label } : m,
+      );
+    case 'APPEND_ASSISTANT_DELTA':
+      // The first token means work is done: drop the progress status.
+      return state.map((m) =>
+        m.id === action.tempId
+          ? { ...m, content: m.content + action.delta, pendingStatus: undefined }
+          : m,
       );
     case 'FINISH_ASSISTANT':
       return state.map((m) =>
-        m.id === action.tempId ? { ...m, id: action.messageId } : m,
+        m.id === action.tempId
+          ? {
+              ...m,
+              id: action.messageId,
+              pendingStatus: undefined,
+              metadata:
+                action.citations.length > 0
+                  ? { ...m.metadata, citations: action.citations }
+                  : m.metadata,
+            }
+          : m,
       );
     default:
       return state;

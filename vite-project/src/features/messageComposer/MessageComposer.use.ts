@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { MessageComposerViewProps } from './MessageComposer.types';
 import { useChatSelection } from '../chatPage/ChatSelection.context';
 import { useMessageThread } from '../messageThread';
-import { useAssistantReply } from '../assistantReply';
+import { useAiReply } from '../assistantReply';
 import { useAuth } from '../auth';
 import { useToast } from '../toast';
 import {
@@ -16,7 +16,7 @@ import {
 export function useMessageComposer(): MessageComposerViewProps {
   const { selectedConversationId, selectedConversation } = useChatSelection();
   const { addOptimisticMessage, confirmMessage, rollbackMessage } = useMessageThread();
-  const { streamReply } = useAssistantReply();
+  const { streamReply } = useAiReply();
   const { user } = useAuth();
   const { showToast } = useToast();
   const [draft, setDraft] = useState({ conversationId: selectedConversationId, value: '' });
@@ -47,17 +47,19 @@ export function useMessageComposer(): MessageComposerViewProps {
         showToast(result.error);
         return;
       }
-      if (selectedConversation?.type === 'assistant') {
-        const assistantSenderId = selectedConversation.participants.find(
+      // The backend owns the routing decision; the composer just obeys it
+      // instead of re-deriving stream-or-not from the conversation type.
+      if (result.aiReply.required) {
+        const aiSenderId = selectedConversation?.participants.find(
           (p) => p.id !== user?.id,
         )?.id;
-        if (!assistantSenderId) {
+        if (!aiSenderId) {
           showToast('Could not find the assistant in this conversation.');
           return;
         }
         await streamReply({
           conversationId: selectedConversationId,
-          assistantSenderId,
+          aiSenderId,
         });
       }
     } finally {

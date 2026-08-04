@@ -7,7 +7,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from '../app.module';
 import { KnowledgeRetrievalService } from '../modules/rag-tutor/retrieval/knowledge-retrieval.service';
 import { AtlasKnowledgeRetrievalService } from '../modules/rag-tutor/retrieval/atlas-knowledge-retrieval.service';
-import { RagTutorService } from '../modules/rag-tutor/rag-tutor.service';
+import { makeEvalTutorAnswerFn } from '../eval/rag/tutor-graph-eval';
 import { UploadKnowledgeDocumentOrchestrator } from '../modules/upload-knowledge-document-orchestrator/upload-knowledge-document.orchestrator';
 import { UploadedFileLike } from '../modules/knowledge-documents/knowledge-document.types';
 import {
@@ -171,8 +171,8 @@ async function main(): Promise<void> {
     );
 
     // ── 8. Tutor answer citations use the uploaded document ─────────────────
-    const tutor = app.get(RagTutorService, { strict: false });
-    const answer = await tutor.answerQuestion({
+    const answerQuestion = makeEvalTutorAnswerFn(app);
+    const answer = await answerQuestion({
       userId: DEBUG_USER_ID,
       question: KNOWN_QUESTION,
     });
@@ -191,7 +191,7 @@ async function main(): Promise<void> {
     );
 
     // ── 9. Unknown question → fallback with no sources ──────────────────────
-    const fallback = await tutor.answerQuestion({
+    const fallback = await answerQuestion({
       userId: DEBUG_USER_ID,
       question: UNKNOWN_QUESTION,
     });

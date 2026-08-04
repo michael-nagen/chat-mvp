@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { RagTutorService } from './rag-tutor.service';
 import { KnowledgeRetrievalService } from './retrieval/knowledge-retrieval.service';
 import { MockKnowledgeRetrievalService } from './retrieval/mock-knowledge-retrieval.service';
 import { AtlasKnowledgeRetrievalService } from './retrieval/atlas-knowledge-retrieval.service';
@@ -57,12 +56,13 @@ export function selectTutorAnswerGenerator(
     : new LangChainTutorAnswerGenerator(config);
 }
 
-// Wires the RAG tutor. RagTutorService is unaware of which retrieval/generation
-// implementation it got — both sides are chosen by the selectors above.
+// Exposes the RAG tutor capability toolkit — retrieval, generation, and the
+// grounding threshold — for the tutor LangGraph (the production orchestrator)
+// and the assistant retrieve-knowledge tool. Both implementations are chosen by
+// the selectors above; no consumer knows which it got.
 @Module({
   imports: [KnowledgeChunksModule, EmbeddingsModule],
   providers: [
-    RagTutorService,
     {
       provide: RAG_TUTOR_MIN_SCORE_TOKEN,
       inject: [ConfigService],
@@ -80,6 +80,10 @@ export function selectTutorAnswerGenerator(
       useFactory: selectTutorAnswerGenerator,
     },
   ],
-  exports: [RagTutorService, KnowledgeRetrievalService],
+  exports: [
+    KnowledgeRetrievalService,
+    TutorAnswerGenerator,
+    RAG_TUTOR_MIN_SCORE_TOKEN,
+  ],
 })
 export class RagTutorModule {}

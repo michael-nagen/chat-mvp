@@ -54,6 +54,14 @@ export const messageStyles = {
     width,
     height: '32px',
   }),
+  // Small, quiet inline status shown under an in-progress AI bubble while the
+  // agent works (e.g. "Searching your documents…").
+  pendingStatus: {
+    fontSize: '11px',
+    fontStyle: 'italic' as const,
+    color: colors.textMuted,
+    padding: '0 4px',
+  } as React.CSSProperties,
   // "Sources" block shown under a tutor answer that carries citations.
   citations: {
     display: 'flex',

@@ -6,7 +6,6 @@ import {
   CONVERSATIONS_DRIVER,
 } from '../conversations/conversations.module';
 import { unitOfWorkProvider } from '../../common/storage/storage.config';
-import { RagTutorModule } from '../rag-tutor/rag-tutor.module';
 import { SendMessageOrchestrator } from './send-message.orchestrator';
 
 export interface SendMessageInput {
@@ -15,12 +14,20 @@ export interface SendMessageInput {
   content: string;
 }
 
+// Routing instruction the send path returns to its caller: dm/group need no AI
+// reply; assistant/tutor should have the AI stream started for them. Generation
+// and persistence of that reply stay in StreamAssistantReplyOrchestrator.
+export type SendMessageAiReply =
+  | { required: false }
+  | { required: true; conversationType: 'assistant' | 'tutor' };
+
 export interface SendMessageOutput {
   message: MessageResponse;
+  aiReply: SendMessageAiReply;
 }
 
 @Module({
-  imports: [MessagesModule, ConversationsModule, RagTutorModule],
+  imports: [MessagesModule, ConversationsModule],
   providers: [
     SendMessageOrchestrator,
     unitOfWorkProvider([MESSAGES_DRIVER, CONVERSATIONS_DRIVER]),

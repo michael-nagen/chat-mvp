@@ -1,16 +1,20 @@
 import { useMessageThread } from '../messageThread';
 import { useToast } from '../toast';
-import { streamAssistantReply } from './AssistantReply.api';
+import { streamAiReply } from './AiReply.api';
 
-
-export function useAssistantReply(): {
+// Drives a streamed AI reply (assistant or tutor): show an optimistic bubble,
+// surface progress, grow it with tokens, then stamp its persisted id and any
+// citations. Rolls back and toasts on failure. The caller passes the AI
+// participant id so this works for either conversation type.
+export function useAiReply(): {
   streamReply: (params: {
     conversationId: string;
-    assistantSenderId: string;
+    aiSenderId: string;
   }) => Promise<void>;
 } {
   const {
     addOptimisticMessage,
+    setAssistantStatus,
     appendAssistantDelta,
     finishAssistant,
     rollbackMessage,
@@ -19,30 +23,31 @@ export function useAssistantReply(): {
 
   async function streamReply({
     conversationId,
-    assistantSenderId,
+    aiSenderId,
   }: {
     conversationId: string;
-    assistantSenderId: string;
+    aiSenderId: string;
   }): Promise<void> {
-    const tempId = `temp-assistant-${crypto.randomUUID()}`;
+    const tempId = `temp-ai-${crypto.randomUUID()}`;
     addOptimisticMessage({
       id: tempId,
       conversationId,
       sender: 'assistant',
-      senderId: assistantSenderId,
+      senderId: aiSenderId,
       content: '',
       timestamp: new Date().toISOString(),
     });
 
     let finished = false;
     try {
-      await streamAssistantReply({
+      await streamAiReply({
         conversationId,
         handlers: {
+          onProgress: (label) => setAssistantStatus(tempId, label),
           onToken: (delta) => appendAssistantDelta(tempId, delta),
-          onDone: (messageId) => {
+          onDone: (messageId, citations) => {
             finished = true;
-            finishAssistant(tempId, messageId);
+            finishAssistant(tempId, messageId, citations);
           },
         },
       });
@@ -52,7 +57,7 @@ export function useAssistantReply(): {
     } catch (err) {
       rollbackMessage(tempId);
       showToast(
-        err instanceof Error ? err.message : 'Assistant failed to respond',
+        err instanceof Error ? err.message : 'The assistant failed to respond',
       );
     }
   }

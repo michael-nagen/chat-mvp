@@ -6,17 +6,19 @@ import {
   ForbiddenException,
 } from '../../common/errors/app.exception';
 import { UnitOfWork } from '../../common/storage/unit-of-work';
+import type { ConversationType } from '../../common/storage/entities';
 import { toMessageResponse } from '../messages/messages.mapper';
-import { RagTutorService } from '../rag-tutor/rag-tutor.service';
-import { TUTOR_ASSISTANT_ID } from '../assistant/assistant.catalog';
-import type { SendMessageInput, SendMessageOutput } from './send-message.module';
+import type {
+  SendMessageAiReply,
+  SendMessageInput,
+  SendMessageOutput,
+} from './send-message.module';
 
 @Injectable()
 export class SendMessageOrchestrator {
   constructor(
     private readonly messages: MessagesService,
     private readonly conversations: ConversationsService,
-    private readonly ragTutor: RagTutorService,
     private readonly unitOfWork: UnitOfWork,
   ) {}
 
@@ -33,8 +35,9 @@ export class SendMessageOrchestrator {
     if (!conversation.participantIds.includes(userId)) {
       throw new ForbiddenException('You are not a participant in this conversation.');
     }
-    // Write the user message AND bump the conversation preview atomically: the
-    // UnitOfWork owns the transaction boundary; the DB driver owns the mechanics.
+    // Persist only the user message here. AI replies (assistant and tutor) are
+    // generated and persisted exactly once by the streaming path, so this write
+    // is identical for every conversation type.
     const message = await this.unitOfWork.run(async (tx) => {
       const created = await this.messages.create(
         { conversationId, userId, content },
@@ -51,38 +54,16 @@ export class SendMessageOrchestrator {
       return created;
     });
 
-    if (conversation.type === 'tutor') {
-      await this.replyAsTutor({ conversationId, userId, question: content });
-    }
-
-    return { message: toMessageResponse(message) };
+    return { message: toMessageResponse(message), aiReply: this.aiReplyFor(conversation.type) };
   }
 
-  private async replyAsTutor({
-    conversationId,
-    userId,
-    question,
-  }: {
-    conversationId: string;
-    userId: string;
-    question: string;
-  }): Promise<void> {
-    // Persist the grounded answer plus its citations as assistant-message
-    // metadata. Fallback answers have no citations, so metadata is omitted.
-    const { answer, citations } = await this.ragTutor.answerQuestion({
-      userId,
-      question,
-    });
-    const metadata = citations.length > 0 ? { citations } : undefined;
-    await this.unitOfWork.run(async (tx) => {
-      const reply = await this.messages.create(
-        { conversationId, userId: TUTOR_ASSISTANT_ID, content: answer, metadata },
-        tx,
-      );
-      await this.conversations.updateLastMessage(
-        { id: conversationId, lastMessage: answer, updatedAt: reply.createdAt },
-        tx,
-      );
-    });
+  // The one place that decides, from conversation type, whether an AI reply
+  // should follow. dm/group get none; assistant/tutor signal the caller to start
+  // the AI stream (which owns the actual generation + persistence).
+  private aiReplyFor(type: ConversationType): SendMessageAiReply {
+    if (type === 'assistant' || type === 'tutor') {
+      return { required: true, conversationType: type };
+    }
+    return { required: false };
   }
 }

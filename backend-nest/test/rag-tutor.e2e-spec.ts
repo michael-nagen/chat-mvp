@@ -34,6 +34,42 @@ describe('RAG tutor message flow (e2e)', () => {
       .get(`/conversations/${conversationId}/messages`)
       .set('Authorization', `Bearer ${token}`);
 
+  type SseFrame = { event: string; data: unknown };
+
+  const parseSse = (raw: string): SseFrame[] =>
+    raw
+      .split('\n\n')
+      .map((frame) => frame.trim())
+      .filter((frame) => frame.length > 0)
+      .map((frame) => {
+        let event = 'message';
+        const dataLines: string[] = [];
+        for (const line of frame.split('\n')) {
+          if (line.startsWith('event:')) event = line.slice(6).trim();
+          else if (line.startsWith('data:')) dataLines.push(line.slice(5).trim());
+        }
+        const data = dataLines.join('\n');
+        return { event, data: data ? JSON.parse(data) : undefined };
+      });
+
+  // Consumes the (finite) tutor SSE stream to completion and returns its frames.
+  const streamReply = (conversationId: string): Promise<SseFrame[]> =>
+    new Promise((resolve, reject) => {
+      request(app.getHttpServer())
+        .get(`/conversations/${conversationId}/assistant/stream`)
+        .set('Authorization', `Bearer ${token}`)
+        .buffer(true)
+        .parse((res, cb) => {
+          let raw = '';
+          res.on('data', (chunk: Buffer) => (raw += chunk.toString()));
+          res.on('end', () => cb(null, raw));
+        })
+        .end((err, res) => {
+          if (err) return reject(err);
+          resolve(parseSse(res.body as unknown as string));
+        });
+    });
+
   it('posts a knowledge_upload event message when uploading into a tutor conversation', async () => {
     const conversation = await createConversation('tutor');
     const conversationId = conversation.body.id as string;
@@ -65,7 +101,7 @@ describe('RAG tutor message flow (e2e)', () => {
     expect(event.metadata).not.toHaveProperty('citations');
   });
 
-  it('stores a grounded tutor reply after a user message in a tutor conversation', async () => {
+  it('streams a grounded tutor reply and persists it exactly once with citations', async () => {
     const conversation = await createConversation('tutor');
     const conversationId = conversation.body.id as string;
 
@@ -73,17 +109,32 @@ describe('RAG tutor message flow (e2e)', () => {
     expect(sent.status).toBe(201);
     expect(sent.body.message.senderId).toBe('u1');
 
-    const res = await listMessages(conversationId);
-    const senders = res.body.messages.map((m: { senderId: string }) => m.senderId);
-    expect(senders).toContain('u1');
-    expect(senders).toContain('tutor-assistant');
+    // The POST only stores the question; the reply arrives over the stream.
+    const afterSend = await listMessages(conversationId);
+    expect(
+      afterSend.body.messages.map((m: { senderId: string }) => m.senderId),
+    ).not.toContain('tutor-assistant');
 
-    const reply = res.body.messages.find(
+    const frames = await streamReply(conversationId);
+    const tokens = frames.filter((f) => f.event === 'token');
+    expect(tokens.length).toBeGreaterThan(0);
+    const done = frames.find((f) => f.event === 'done');
+    const donePayload = done?.data as { messageId: string; citations: unknown[] };
+    expect(donePayload.citations).toHaveLength(2);
+    expect((donePayload.citations as Array<{ chunkId: string }>)[0].chunkId).toBe(
+      'mock-chunk-0',
+    );
+
+    const res = await listMessages(conversationId);
+    const replies = res.body.messages.filter(
       (m: { senderId: string }) => m.senderId === 'tutor-assistant',
     );
+    // Persisted exactly once — never during the POST and never twice.
+    expect(replies).toHaveLength(1);
+    const reply = replies[0];
+    expect(reply.id).toBe(donePayload.messageId);
     expect(reply.content).toContain('[Source 1]');
 
-    // Citations are persisted as refs (chunkId + doc info + score), never text.
     expect(reply.metadata.citations).toHaveLength(2);
     expect(reply.metadata.citations[0]).toEqual({
       chunkId: 'mock-chunk-0',
@@ -92,7 +143,6 @@ describe('RAG tutor message flow (e2e)', () => {
       chunkIndex: 0,
       score: 0.82,
     });
-    // No text/embedding is ever stored in a citation ref.
     for (const citation of reply.metadata.citations) {
       expect(Object.keys(citation).sort()).toEqual([
         'chunkId',
@@ -104,21 +154,26 @@ describe('RAG tutor message flow (e2e)', () => {
     }
   });
 
-  it('stores the safe fallback reply when retrieval is weak/no-context', async () => {
+  it('streams the safe fallback reply (no citations) when retrieval is weak', async () => {
     const conversation = await createConversation('tutor');
     const conversationId = conversation.body.id as string;
 
     await send(conversationId, 'no-context question about nothing');
 
+    const frames = await streamReply(conversationId);
+    const done = frames.find((f) => f.event === 'done');
+    expect((done?.data as { citations: unknown[] }).citations).toHaveLength(0);
+
     const res = await listMessages(conversationId);
-    const reply = res.body.messages.find(
+    const replies = res.body.messages.filter(
       (m: { senderId: string }) => m.senderId === 'tutor-assistant',
     );
-    expect(reply.content).toBe(
+    expect(replies).toHaveLength(1);
+    expect(replies[0].content).toBe(
       'I could not find relevant information in your uploaded knowledge base for this question.',
     );
     // Fallback answers carry no citations, so no metadata is attached.
-    expect(reply.metadata).toBeUndefined();
+    expect(replies[0].metadata).toBeUndefined();
   });
 
   it('does not generate a tutor reply for a non-tutor (assistant) conversation', async () => {
