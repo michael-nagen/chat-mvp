@@ -1,190 +1,540 @@
-# Chat MVP
+A full-stack messaging application built to demonstrate production-minded engineering practices: modular architecture, explicit domain boundaries, persistent storage, secure authentication, cursor-based pagination, transactional writes, direct-to-object-storage uploads, and automated testing.
 
-A full-stack chat app: a **React + Vite + TypeScript** frontend talking to an
-**Express + TypeScript** backend over a typed HTTP contract. Conversation list on the left,
-message thread + composer on the right, with optimistic sends and explicit
-loading / empty / error states. The backend is mock-auth + in-memory storage — no database —
-so the whole thing runs locally with two `npm run dev` commands.
+The application provides direct and group conversations, message search, profile management, and optimistic message delivery through a React client backed by a NestJS REST API.
 
-## Repository layout
+Repository note: backend-nest/ is the current backend implementation.
+backend/ contains the earlier Express-based version and is retained to show the project's architectural evolution.
 
-```
-.
-├─ vite-project/      # frontend — React 19 + Vite + TypeScript
-├─ backend/           # backend — Express 4 + TypeScript + Zod
-├─ API_CONTRACT.md    # the HTTP contract both sides implement
-└─ README.md          # you are here
-```
+Features
 
-| Doc | Covers |
-| --- | --- |
-| [API_CONTRACT.md](API_CONTRACT.md) | Domain types, every endpoint, request/response shapes |
-| [backend/README.md](backend/README.md) | Backend architecture, layering, error model |
+Messaging
 
-## Stack
+Create one-to-one conversations with idempotent DM creation
 
-- **Frontend** — React 19, Vite, TypeScript (strict), Vitest + React Testing Library
-- **Backend** — Express 4, TypeScript (strict), Zod validation, Vitest + Supertest, in-memory store
+Create group conversations with validated participant lists
 
-## Getting started
+List conversations ordered by most recent activity
 
-Run the two apps in separate terminals. Start the backend first so the frontend has something
-to talk to.
+Send messages with optimistic UI updates and rollback on failure
 
-```bash
-# terminal 1 — backend on http://localhost:3000
-cd backend
-npm install
-npm run dev
+Load long message histories using cursor-based pagination
 
-# terminal 2 — frontend on http://localhost:5173
-cd vite-project
-npm install
-npm run dev
-```
+Search message content across conversations accessible to the current user
 
-The frontend's API client points at `http://localhost:3000` and attaches the auth token as
-`Authorization: Bearer <token>`. Log in by name (`Alice` or `Bob`) — mock auth, no password.
+Store a deduplicated list of recent searches
 
-Common scripts (run inside each package):
+Authentication and profiles
 
-| Script | Frontend | Backend |
-| --- | --- | --- |
-| `npm run dev` | Vite dev server | `tsx watch` server |
-| `npm test` | Vitest | Vitest + Supertest |
-| `npm run build` | type-check + Vite build | compile to `dist/` |
-| `npm run lint` | ESLint | — |
+Email-and-password signup and login
 
----
+Password hashing with bcrypt
 
-## Architecture
+JWT-based authentication with Passport
 
-The frontend gathers user input and sends an authenticated HTTP request; the backend
-authenticates, validates, runs domain logic against the in-memory store, and returns JSON; the
-frontend updates the screen — optimistically for sends, with rollback on failure.
+Protected API routes and conversation-level authorization
 
-```mermaid
+Edit first name, last name, and email
+
+Upload, replace, and remove profile images
+
+Direct browser-to-S3 uploads using short-lived presigned URLs
+
+Server-side validation of uploaded object ownership, existence, type, and size
+
+Reliability and maintainability
+
+MongoDB transactions for multi-document operations
+
+Repository abstractions with MongoDB and in-memory implementations
+
+Redis-backed recent searches with automatic in-memory fallback
+
+Centralized validation, error serialization, and request logging
+
+Explicit DTOs and strict TypeScript across the stack
+
+Unit and integration tests for frontend and backend behavior
+
+Idempotent seed script with a 100+ message thread for pagination testing
+
+Architecture
+
 flowchart LR
-    subgraph FE["Frontend (React + Vite)"]
-        UI["features (UI + state)"] --> APIc["apiClient — attaches Bearer token"]
-    end
+    Browser["React + Vite client"]
+    API["NestJS REST API"]
+    Domain["Orchestrators and services"]
+    Mongo[("MongoDB")]
+    Redis[("Redis")]
+    S3[("AWS S3")]
 
-    subgraph BE["Backend (Express)"]
-        Route["router → requireAuth → validate"] --> Logic["controller → orchestrator → service → repo"]
-        Logic --> Store[("in-memory store")]
-    end
+    Browser -->|"HTTP / JSON + Bearer JWT"| API
+    API --> Domain
+    Domain --> Mongo
+    Domain --> Redis
+    Browser -->|"Presigned PUT"| S3
+    Domain -->|"Presign, verify, delete"| S3
 
-    APIc -->|"HTTP + Bearer token"| Route
-    Store -->|"JSON response"| APIc
-    APIc --> UI
+Backend request flow
 
-    classDef infra fill:#e8eef7,stroke:#5b7;
-    class APIc,Store infra;
-```
+Controller → Orchestrator → Domain Service → Repository Port → Storage Driver
 
-### Frontend
+Controllers translate HTTP requests into application inputs.
 
-`AuthProvider` wraps the app. `App.tsx` reads auth state — not logged in → `AuthScreen`,
-otherwise `ChatPage`. `ChatPage` sets up three context providers — `ChatSelectionContext`
-(which conversation is open), `ToastContext` (global errors), and `MessageThreadContext`
-(the current message list) — then renders the layout. The features inside (`ConversationList`,
-`MessageList`, `MessageComposer`, `Toast`) each read their own context directly; no props are
-drilled between them. Every authenticated call flows through `shared/api/apiClient.ts`, which
-reads the token from `localStorage` and attaches it as a Bearer header.
+Orchestrators coordinate workflows that span multiple domains.
 
-### Backend
+Services own domain-specific behavior.
 
-`server.ts` boots the listener; the app lives in `app.ts`. Every request passes through CORS,
-the request logger, and the JSON parser, then hits a feature router. Protected routes run
-`requireAuth` (resolves the mock token to a `userId` on `res.locals`) and `validate` (Zod).
-Inside a feature the chain is **controller → orchestrator → service → repo**, and only the repo
-touches the store. A domain reaches another domain through its orchestrator, never its repo or
-service directly. Anything thrown lands in one `errorHandler` that returns
-`{ error: { code, message } }`. See [backend/README.md](backend/README.md) for the full layering
-and error model.
+Repository ports keep business logic independent of persistence technology.
 
-### Calling convention
+Storage drivers implement those ports for MongoDB or process-local memory.
 
-Functions and methods that take more than one argument receive a single **named-parameter
-object** rather than positional arguments — on both sides of the stack. So a call reads
-`sendUserMessage({ conversationId, content })`, not `sendUserMessage(conversationId, content)`,
-and a service method is `list({ conversationId, userId, cursor, limit })`. Call sites stay
-self-documenting and argument order stops mattering.
+Unit of Work provides a transaction boundary without coupling orchestrators to Mongoose.
 
----
+For example, sending a message inserts the message and updates the conversation preview inside one MongoDB transaction. If either write fails, both are rolled back.
 
-## Frontend feature anatomy
+Frontend organization
 
-Each feature is a self-contained folder. The public surface is `index.ts(x)`; everything
-else is internal. Within a feature the code is split into three layers — a thin **container**
-at the root, a **presentational** layer under `components/`, and a **pure logic** layer under
-`model/` — with tests in `__tests__/`.
+The client follows a feature-first structure. Each feature owns its UI, state, API adapter, types, and tests while shared infrastructure remains under src/shared.
 
-```
-features/messageComposer/
-├─ index.ts                       # public export — the only thing other features import
-├─ MessageComposer.tsx            # container — calls the hook, spreads props into the view
-├─ MessageComposer.use.ts         # hook — state, effects, send + rollback handlers
-├─ MessageComposer.types.ts       # types and prop shapes
-├─ components/                    # presentational layer — props in, UI out (no data fetching)
-│  ├─ MessageComposer.view.tsx
-│  ├─ MessageComposerTextarea.tsx
-│  ├─ MessageComposerSendButton.tsx
-│  ├─ MessageComposer.styles.ts
-│  └─ MessageComposer.constants.ts
-├─ model/                         # pure logic — no React, easy to unit-test
-│  ├─ MessageComposer.api.ts      # adapter over the shared API client
-│  └─ MessageComposer.utils.ts
-└─ __tests__/
-   ├─ MessageComposer.view.test.tsx
-   └─ MessageComposer.api.test.ts
-```
+A typical feature is divided into:
 
-Features that own shared state keep their context and provider at the feature root next to the
-container (e.g. `Auth.context.tsx` + `AuthProvider.tsx`, `ChatSelection.context.ts` +
-`ChatSelectionProvider.tsx`). The provider stays thin by delegating to a composing **controller
-hook** that owns the reducer and exposes only named actions — never a raw setter — so the state
-has a single owner (`useAuthController`, `useMessageThreadController`). Each hook lives in its
-own `*.use.ts` file.
+a container component for wiring
 
-Two features nest a smaller sub-feature with the same anatomy:
-`conversationList/conversation/` (a single conversation row) and `messageList/message/`
-(a single message bubble + skeleton).
+a view layer for presentation
 
-### File convention (frontend)
+hooks for state and side effects
 
-| File              | Role                                                            |
-| ----------------- | --------------------------------------------------------------- |
-| `*.tsx` (root)    | Container — wires the hook to the view, exported via `index`    |
-| `*.use.ts`        | React hook — state, effects, handlers                           |
-| `*.types.ts`      | TypeScript types and prop shapes                                |
-| `*.context.ts(x)` | `createContext` + accessor hook                                 |
-| `*Provider.tsx`   | Context provider component                                      |
-| `*.view.tsx`      | Presentational component — props in, UI out                     |
-| `*.styles.ts`     | Inline style objects                                            |
-| `*.constants.ts`  | Magic values — sizes, labels, timeouts                          |
-| `*.reducer.ts`    | Pure reducer + initial state                                    |
-| `*.api.ts`        | Adapter over the shared API client                              |
-| `*.storage.ts`    | Read / write to `localStorage`                                  |
-| `*.utils.ts`      | Pure utility functions                                          |
-| `index.ts(x)`     | Wires everything together and exports the public API            |
+pure model utilities
 
-### Folder responsibilities (frontend)
+a small adapter over the shared HTTP client
 
-| Folder                          | Responsibility                                                  |
-| ------------------------------- | --------------------------------------------------------------- |
-| `src/shared/entities`           | Shared domain types — `User`, `Conversation`, `Message`         |
-| `src/shared/api`                | The HTTP API client (attaches the Bearer token)                 |
-| `src/shared/styles`             | Global style tokens (colors)                                    |
-| `src/features/auth`             | Login flow, auth context, reducer state machine, `localStorage` |
-| `src/features/chatPage`         | Layout shell + the three chat context providers                 |
-| `src/features/conversationList` | List of conversations — loading, empty, error states            |
-| `src/features/messageThread`    | Message store — owns the array via a controller + named actions |
-| `src/features/messageList`      | Message list — fetches on selection change, auto-scroll         |
-| `src/features/messageComposer`  | Composer — optimistic send + rollback on failure                |
-| `src/features/messageSearch`    | Search bar — swaps the sidebar for recents/results, exit on click-out |
-| `src/features/newConversation`  | Start a conversation by recipient (409 if one already exists)   |
-| `src/features/toast`            | Global error toast                                              |
+focused unit and component tests
 
-For the backend's module anatomy, conventions, and error codes, see
-[backend/README.md](backend/README.md).
+Cross-feature state is exposed through narrow context providers with named actions rather than raw setters.
+
+Technology stack
+
+Area
+
+Technologies
+
+Frontend
+
+React 19, TypeScript, Vite 8, React Router
+
+Client state
+
+React Context, reducers, custom hooks, localStorage
+
+HTTP
+
+REST, JSON, Fetch API, Bearer tokens
+
+Backend
+
+NestJS 11, TypeScript, RxJS
+
+Authentication
+
+JWT, Passport, passport-jwt, bcrypt
+
+Validation
+
+class-validator, class-transformer, NestJS ValidationPipe
+
+Primary database
+
+MongoDB 7, Mongoose, @nestjs/mongoose
+
+Cache / ephemeral data
+
+Redis through ioredis, with in-memory fallback
+
+Object storage
+
+AWS S3, AWS SDK v3, presigned PUT URLs
+
+Infrastructure
+
+Docker Compose for a local MongoDB replica set
+
+Frontend tests
+
+Vitest, React Testing Library, Jest DOM, jsdom
+
+Backend tests
+
+Jest, Supertest, ts-jest, mongodb-memory-server
+
+Code quality
+
+Strict TypeScript, ESLint, Prettier
+
+Repository structure
+
+.
+├── vite-project/              # React frontend
+│   └── src/
+│       ├── features/          # Auth, chat, search, profile, toast, etc.
+│       ├── routing/           # Public and protected routes
+│       └── shared/            # API client, entities, UI primitives, utilities
+│
+├── backend-nest/              # Current NestJS backend
+│   └── src/
+│       ├── common/            # Errors, filters, logging, storage abstractions
+│       ├── modules/           # Domain modules and use-case orchestrators
+│       └── scripts/           # Database seed and S3 verification
+│
+├── backend/                   # Earlier Express + TypeScript implementation
+├── API_CONTRACT.md            # Original API contract / project milestone
+└── README.md
+
+Data model
+
+Collection
+
+Purpose
+
+Important fields
+
+users
+
+Authentication, profile, and contacts
+
+email, passwordHash, name, contactIds, avatarUrl
+
+conversations
+
+DM and group metadata
+
+participantIds, type, dmKey, title, lastMessage, lastMessageAt
+
+messages
+
+Unbounded conversation history
+
+conversationId, senderId, content, createdAt
+
+Messages are stored separately from conversations so threads can grow without expanding a single conversation document. Compound indexes support ordered reads and keyset pagination. A partial unique index on dmKey guarantees one DM per normalized participant set while excluding group conversations.
+
+API overview
+
+All protected routes expect:
+
+Authorization: Bearer <token>
+
+Method
+
+Endpoint
+
+Description
+
+POST
+
+/auth/signup
+
+Create an account and return an access token
+
+POST
+
+/auth/login
+
+Authenticate and return an access token
+
+GET
+
+/me
+
+Return the authenticated user's profile
+
+GET
+
+/me/contacts
+
+List eligible conversation contacts
+
+PATCH
+
+/me/name
+
+Update first and last name
+
+PATCH
+
+/me/email
+
+Update email
+
+POST
+
+/me/avatar/presign
+
+Request a presigned avatar upload
+
+PUT
+
+/me/avatar
+
+Commit an uploaded avatar
+
+DELETE
+
+/me/avatar
+
+Remove the current avatar
+
+GET
+
+/conversations
+
+List the user's conversations
+
+POST
+
+/conversations/dm
+
+Get or create a direct conversation
+
+POST
+
+/conversations/groups
+
+Create a group conversation
+
+GET
+
+/conversations/:id/messages
+
+Read a cursor-paginated message page
+
+POST
+
+/conversations/:id/messages
+
+Send a message
+
+GET
+
+/messages/search
+
+Search accessible message content
+
+GET
+
+/search/recent
+
+Return recent search terms
+
+Errors use a consistent envelope:
+
+{
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "Human-readable explanation"
+  }
+}
+
+Getting started
+
+Prerequisites
+
+A recent Node.js and npm installation
+
+Docker with Docker Compose
+
+Optional: Redis for persistent recent searches
+
+Optional: an AWS S3 bucket for real avatar storage
+
+1. Clone the repository
+
+git clone https://github.com/michael-nagen/chat-mvp.git
+cd chat-mvp
+
+The repository's default branch is chat-mvp.
+
+2. Start MongoDB
+
+The supplied Compose configuration starts MongoDB 7 as a single-node replica set, which is required for transactions.
+
+cd backend-nest
+docker compose up -d
+
+3. Configure and start the NestJS API
+
+npm ci
+cp .env.example .env
+
+For a minimal local setup, configure:
+
+JWT_SECRET=replace-with-a-long-random-development-secret
+STORAGE_DRIVER=mongo
+MONGO_URI=mongodb://localhost:27017/chat?replicaSet=rs0&directConnection=true
+PORT=3000
+CORS_ORIGIN=http://localhost:5173
+AVATAR_STORAGE=fake
+
+Seed the development database and start the server:
+
+npm run seed
+npm run start:dev
+
+The API is available at http://localhost:3000.
+
+The seed creates several development users. For example:
+
+Email: alice@example.com
+Password: password
+
+4. Start the React client
+
+In a second terminal:
+
+cd vite-project
+npm ci
+npm run dev
+
+Open http://localhost:5173.
+
+The frontend uses http://localhost:3000 by default. To point it elsewhere:
+
+VITE_API_BASE_URL=https://api.example.com
+
+Optional services
+
+Redis
+
+Set REDIS_URL to persist recent searches:
+
+REDIS_URL=redis://localhost:6379
+
+If Redis is missing or unreachable, the API logs a warning and uses an in-memory implementation.
+
+AWS S3 avatars
+
+Set AVATAR_STORAGE=s3 and configure:
+
+AVATAR_STORAGE=s3
+AWS_REGION=us-east-1
+AWS_S3_BUCKET=your-avatars-bucket
+AWS_ACCESS_KEY_ID=your-access-key-id
+AWS_SECRET_ACCESS_KEY=your-secret-access-key
+# AVATAR_PUBLIC_BASE_URL=https://cdn.example.com
+
+The bucket must allow presigned PUT requests from the frontend origin and public or CDN-backed reads for committed avatars. The application identity requires s3:PutObject, s3:GetObject, and s3:DeleteObject for the avatar prefix.
+
+Verify the S3 flow end to end with:
+
+npm run verify:s3
+
+Scripts
+
+NestJS backend
+
+Command
+
+Purpose
+
+npm run start:dev
+
+Start the API in watch mode
+
+npm run build
+
+Compile the production build
+
+npm run start:prod
+
+Run the compiled server
+
+npm run typecheck
+
+Run TypeScript without emitting files
+
+npm run seed
+
+Idempotently seed development data
+
+npm run verify:s3
+
+Verify the complete S3 avatar lifecycle
+
+npm test
+
+Run the Jest test suite
+
+npm run test:cov
+
+Run tests with coverage
+
+React frontend
+
+Command
+
+Purpose
+
+npm run dev
+
+Start the Vite development server
+
+npm run build
+
+Type-check and create a production bundle
+
+npm run preview
+
+Preview the production build
+
+npm test
+
+Run the Vitest suite
+
+npm run lint
+
+Run ESLint
+
+npm run format:check
+
+Check Prettier formatting
+
+Testing strategy
+
+The project tests behavior at multiple levels:
+
+pure utilities, reducers, mappers, and title derivation
+
+React views and user interactions
+
+API adapters and optimistic-send behavior
+
+authentication and authorization flows
+
+repositories against in-memory MongoDB
+
+orchestrators with isolated domain dependencies
+
+HTTP endpoints through Supertest
+
+error filtering and response serialization
+
+The in-memory storage drivers and fake avatar storage keep most tests deterministic and independent of external infrastructure.
+
+Current scope
+
+The application currently uses request-response REST communication. WebSockets, online presence, typing indicators, read receipts, and push notifications are not yet implemented.
+
+Potential extensions include:
+
+real-time delivery through WebSockets
+
+refresh tokens and session revocation
+
+delivery and read status
+
+file attachments beyond avatars
+
+containerized application services
+
+CI/CD and production deployment configuration
+
+observability with structured logs, metrics, and tracing
